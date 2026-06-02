@@ -2,7 +2,7 @@ import 'package:postgres/postgres.dart';
 
 Future<PostgreSQLConnection> connect() async {
   final connection = PostgreSQLConnection(
-    'db',   // Host
+    'localhost',   // Host
     5432,   // Port
     'cuevana7_movies_app_cv_db', // Database name
     username: 'postgres', // no siempre es lo mismo eh xd cambienlo si no es el mismo user
