@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 import 'package:cuevana7_movies_app_cv/resources/styles/styles.dart';
-import 'package:cuevana7_movies_app_cv/presentation/providers/auth/auth_provider.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/app_text_field.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/primary_button.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/account_divider.dart';
 
 class RegisterScreen extends StatefulWidget {
   static const name = 'register-screen';
@@ -24,6 +25,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  bool _isLoading = false;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
   void dispose() {
@@ -36,35 +39,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _onRegisterPressed() async {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
+
     if (!_formKey.currentState!.validate()) return;
 
-    final authProvider = context.read<AuthProvider>();
-    await authProvider.register(
-      email: _emailCtrl.text.trim(),
-      password: _passwordCtrl.text,
-      name: '${_nameCtrl.text.trim()} ${_lastNameCtrl.text.trim()}',
-    );
-
-    if (!mounted) return;
-
-    if (authProvider.status == AuthStatus.authenticated) {
-      context.go('/');
-    } else if (authProvider.errorMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.errorMessage!),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      authProvider.clearError();
-    }
+    setState(() => _isLoading = true);
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() => _isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isLoading =
-        context.watch<AuthProvider>().status == AuthStatus.checking;
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -72,64 +57,81 @@ class _RegisterScreenState extends State<RegisterScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Form(
             key: _formKey,
+            autovalidateMode: _autovalidateMode,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 32),
 
-                const SizedBox(height: 24),
+                GestureDetector(
+                  onTap: () => context.pop(),
+                  child: const Icon(
+                    Icons.arrow_back_ios,
+                    color: AppColors.dark,
+                    size: 22,
+                  ),
+                ),
 
-                // Título
+                const SizedBox(height: 16),
+
                 const Text('Registro de usuario', style: AppStyles.title),
 
                 const SizedBox(height: 32),
 
-                // Nombre
-                _AppTextField(
+                AppTextField(
                   controller: _nameCtrl,
                   hint: 'Nombre',
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Ingresa tu nombre';
+                    if (v == null || v.isEmpty)
+                      return 'El nombre es obligatorio';
+                    if (v.trim().length < 2)
+                      return 'El nombre debe tener al menos 2 caracteres';
                     return null;
                   },
                 ),
 
                 const SizedBox(height: 16),
 
-                // Apellido
-                _AppTextField(
+                AppTextField(
                   controller: _lastNameCtrl,
                   hint: 'Apellido',
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Ingresa tu apellido';
+                    if (v == null || v.isEmpty)
+                      return 'El apellido es obligatorio';
+                    if (v.trim().length < 2)
+                      return 'El apellido debe tener al menos 2 caracteres';
                     return null;
                   },
                 ),
 
                 const SizedBox(height: 16),
 
-                // Correo
-                _AppTextField(
+                AppTextField(
                   controller: _emailCtrl,
                   hint: 'Correo electrónico',
                   keyboardType: TextInputType.emailAddress,
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Ingresa tu correo';
-                    if (!v.contains('@')) return 'Correo no válido';
+                    if (v == null || v.isEmpty)
+                      return 'El correo es obligatorio';
+                    if (!v.contains('@'))
+                      return 'Escribe un correo válido, falta el @';
+                    if (!v.contains('.'))
+                      return 'Escribe un correo válido, falta el dominio';
                     return null;
                   },
                 ),
 
                 const SizedBox(height: 16),
 
-                // Contraseña
-                _AppTextField(
+                AppTextField(
                   controller: _passwordCtrl,
                   hint: 'Contraseña',
                   obscureText: _obscurePassword,
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Ingresa tu contraseña';
-                    if (v.length < 6) return 'Mínimo 6 caracteres';
+                    if (v == null || v.isEmpty)
+                      return 'La contraseña es obligatoria';
+                    if (v.length < 6)
+                      return 'La contraseña debe tener al menos 6 caracteres';
                     return null;
                   },
                   suffixIcon: IconButton(
@@ -146,8 +148,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const SizedBox(height: 16),
 
-                // Confirmar contraseña
-                _AppTextField(
+                AppTextField(
                   controller: _confirmPasswordCtrl,
                   hint: 'Confirmar contraseña',
                   obscureText: _obscureConfirm,
@@ -171,22 +172,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const SizedBox(height: 36),
 
-                // Botón registrarse
-                _PrimaryButton(
+                PrimaryButton(
                   label: 'Registrarse',
-                  isLoading: isLoading,
-                  onPressed: isLoading ? null : _onRegisterPressed,
+                  isLoading: _isLoading,
+                  onPressed: _isLoading ? null : _onRegisterPressed,
                 ),
 
                 const SizedBox(height: 24),
 
-                // Separador ¿Ya tienes cuenta?
-                _AccountDivider(),
+                const AccountDivider(),
 
                 const SizedBox(height: 24),
 
-                // Botón iniciar sesión
-                _PrimaryButton(
+                PrimaryButton(
                   label: 'Iniciar sesión',
                   isLoading: false,
                   onPressed: () => context.go('/login'),
@@ -198,135 +196,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-// ─── Widgets privados ────────────────────────────────────────────────────────
-
-class _AppTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final String hint;
-  final bool obscureText;
-  final TextInputType keyboardType;
-  final Widget? suffixIcon;
-  final String? Function(String?)? validator;
-
-  const _AppTextField({
-    required this.controller,
-    required this.hint,
-    this.obscureText = false,
-    this.keyboardType = TextInputType.text,
-    this.suffixIcon,
-    this.validator,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      obscureText: obscureText,
-      style: AppStyles.fieldText,
-      validator: validator,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: AppStyles.hintField,
-        filled: true,
-        fillColor: AppColors.inputFill,
-        suffixIcon: suffixIcon,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 20,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.dark, width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.redAccent),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
-        ),
-      ),
-    );
-  }
-}
-
-class _PrimaryButton extends StatelessWidget {
-  final String label;
-  final bool isLoading;
-  final VoidCallback? onPressed;
-
-  const _PrimaryButton({
-    required this.label,
-    required this.isLoading,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 64,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.dark,
-          disabledBackgroundColor: AppColors.dark.withOpacity(0.6),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          elevation: 0,
-        ),
-        child: isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  color: AppColors.buttonText,
-                  strokeWidth: 2.5,
-                ),
-              )
-            : Text(label, style: AppStyles.buttonLabel),
-      ),
-    );
-  }
-}
-
-class _AccountDivider extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const SizedBox(
-          width: 53,
-          child: Divider(color: AppColors.divider, thickness: 1),
-        ),
-        Expanded(
-          child: Center(
-            child: Text(
-              '¿Ya tienes una cuenta?',
-              style: AppStyles.dividerLabel,
-            ),
-          ),
-        ),
-        const SizedBox(
-          width: 53,
-          child: Divider(color: AppColors.divider, thickness: 1),
-        ),
-      ],
     );
   }
 }

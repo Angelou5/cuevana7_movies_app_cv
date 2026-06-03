@@ -1,10 +1,25 @@
-class User {
 
+class UserEntity{
+ final String id;
+ final String email;
+ final String? name;
+ final String? token;
+ 
+ const UserEntity({
+  required this.id,
+  required this.email,
+  required this.name,
+  required this.token,
+ });
+
+}
+
+class User {
   final String id;
   final String name;
   final String email;
   final String password;
-  final Roles rol; 
+  final Roles rol;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -15,11 +30,10 @@ class User {
     required this.password,
     required this.rol,
     required this.createdAt,
-    required this.updatedAt,
+    required this.updatedAt
   });
-
 }
 
 enum Roles{
-    user, admin
+  user, admin
 }
