@@ -1,0 +1,26 @@
+services:
+  app:
+    platform: linux/amd64
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+  db:
+    image: postgres:16-alpine
+    platform: linux/amd64
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: cuevana7_movies_app_cv_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d/
+      - db_data:/var/lib/postgresql/data
+volumes:
+  db_data:
+
+  

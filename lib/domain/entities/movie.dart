@@ -1,0 +1,1 @@
+// Entidad del dominio — no depende de ningún framework ni API
