@@ -8,31 +8,37 @@ class AppStyles {
     color: AppColors.dark,
     fontSize: 32,
     fontWeight: FontWeight.w500,
+    fontFamily: 'InclusiveSans',
   );
 
   static const TextStyle hintField = TextStyle(
     color: AppColors.hint,
     fontSize: 18,
+    fontFamily: 'InclusiveSans',
   );
 
   static const TextStyle fieldText = TextStyle(
     color: AppColors.dark,
     fontSize: 18,
+    fontFamily: 'InclusiveSans',
   );
 
   static const TextStyle forgotPassword = TextStyle(
     color: AppColors.hint,
     fontSize: 16,
+    fontFamily: 'InclusiveSans',
   );
 
   static const TextStyle buttonLabel = TextStyle(
     color: AppColors.buttonText,
     fontSize: 20,
     fontWeight: FontWeight.w400,
+    fontFamily: 'InclusiveSans',
   );
 
   static const TextStyle dividerLabel = TextStyle(
     color: AppColors.dark,
     fontSize: 18,
+    fontFamily: 'InclusiveSans',
   );
 }

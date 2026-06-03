@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 import 'package:cuevana7_movies_app_cv/resources/styles/styles.dart';
-import 'package:cuevana7_movies_app_cv/presentation/providers/auth/auth_provider.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/app_text_field.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/primary_button.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/or_divider.dart';
 
 class LoginScreen extends StatefulWidget {
   static const name = 'login-screen';
@@ -19,6 +20,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
   void dispose() {
@@ -28,34 +31,17 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _onLoginPressed() async {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
+
     if (!_formKey.currentState!.validate()) return;
 
-    final authProvider = context.read<AuthProvider>();
-    await authProvider.login(
-      email: _emailCtrl.text.trim(),
-      password: _passwordCtrl.text,
-    );
-
-    if (!mounted) return;
-
-    if (authProvider.status == AuthStatus.authenticated) {
-      context.go('/'); // navegar a home cuando autenticado
-    } else if (authProvider.errorMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.errorMessage!),
-          backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-        ),
-      );
-      authProvider.clearError();
-    }
+    setState(() => _isLoading = true);
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() => _isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isLoading =
-        context.watch<AuthProvider>().status == AuthStatus.checking;
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -63,40 +49,46 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Form(
             key: _formKey,
+            autovalidateMode: _autovalidateMode,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 40),
 
+                Center(child: _Logo()),
+
                 const SizedBox(height: 24),
 
-                // Título
                 const Text('Inicio de sesión', style: AppStyles.title),
 
                 const SizedBox(height: 32),
 
-                // Campo email
-                _AppTextField(
+                AppTextField(
                   controller: _emailCtrl,
                   hint: 'Correo electrónico',
                   keyboardType: TextInputType.emailAddress,
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Ingresa tu correo';
-                    if (!v.contains('@')) return 'Correo no válido';
+                    if (v == null || v.isEmpty)
+                      return 'El correo es obligatorio';
+                    if (!v.contains('@'))
+                      return 'Escribe un correo válido, falta el @';
+                    if (!v.contains('.'))
+                      return 'Escribe un correo válido, falta el dominio';
                     return null;
                   },
                 ),
 
                 const SizedBox(height: 16),
 
-                // Campo contraseña
-                _AppTextField(
+                AppTextField(
                   controller: _passwordCtrl,
                   hint: 'Contraseña',
                   obscureText: _obscurePassword,
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Ingresa tu contraseña';
-                    if (v.length < 6) return 'Mínimo 6 caracteres';
+                    if (v == null || v.isEmpty)
+                      return 'La contraseña es obligatoria';
+                    if (v.length < 6)
+                      return 'La contraseña debe tener al menos 6 caracteres';
                     return null;
                   },
                   suffixIcon: IconButton(
@@ -113,11 +105,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 10),
 
-                // ¿Olvidaste la contraseña?
                 TextButton(
-                  onPressed: () {
-                    // TODO: context.push('/forgot-password');
-                  },
+                  onPressed: () {},
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
                     minimumSize: Size.zero,
@@ -131,27 +120,42 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 36),
 
-                // Botón login
-                _PrimaryButton(
+                PrimaryButton(
                   label: 'Iniciar sesión',
-                  isLoading: isLoading,
-                  onPressed: isLoading ? null : _onLoginPressed,
+                  isLoading: _isLoading,
+                  onPressed: _isLoading ? null : _onLoginPressed,
                 ),
 
                 const SizedBox(height: 24),
 
-                // Separador
-                const _OrDivider(),
+                const OrDivider(),
 
                 const SizedBox(height: 24),
 
-                // Botón registro
-                _PrimaryButton(
+                PrimaryButton(
                   label: 'Registrarse',
                   isLoading: false,
-                  onPressed: () {
-                    context.push('/register');
-                  },
+                  onPressed: () => context.push('/register'),
+                ),
+
+                const SizedBox(height: 24),
+
+                Center(
+                  child: GestureDetector(
+                    onTap: () {},
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.hint, width: 3),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Image.asset('assets/images/huella.png'),
+                      ),
+                    ),
+                  ),
                 ),
 
                 const SizedBox(height: 48),
@@ -164,123 +168,25 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// ─── Widgets privados ────────────────────────────────────────────────────────
-
-class _AppTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final String hint;
-  final bool obscureText;
-  final TextInputType keyboardType;
-  final Widget? suffixIcon;
-  final String? Function(String?)? validator;
-
-  const _AppTextField({
-    required this.controller,
-    required this.hint,
-    this.obscureText = false,
-    this.keyboardType = TextInputType.text,
-    this.suffixIcon,
-    this.validator,
-  });
-
+class _Logo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      obscureText: obscureText,
-      style: AppStyles.fieldText,
-      validator: validator,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: AppStyles.hintField,
-        filled: true,
-        fillColor: AppColors.inputFill,
-        suffixIcon: suffixIcon,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 20,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.dark, width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.redAccent),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
-        ),
-      ),
-    );
-  }
-}
-
-class _PrimaryButton extends StatelessWidget {
-  final String label;
-  final bool isLoading;
-  final VoidCallback? onPressed;
-
-  const _PrimaryButton({
-    required this.label,
-    required this.isLoading,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 64,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.dark,
-          disabledBackgroundColor: AppColors.dark.withOpacity(0.6),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+    return Center(
+      child: Column(
+        children: [
+          Image.asset('assets/images/logo.png', width: 62, height: 62),
+          const SizedBox(height: 8),
+          const Text(
+            'Cuevana 7',
+            style: TextStyle(
+              fontFamily: 'InclusiveSans',
+              fontSize: 24,
+              fontWeight: FontWeight.w500,
+              color: AppColors.dark,
+            ),
           ),
-          elevation: 0,
-        ),
-        child: isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  color: AppColors.buttonText,
-                  strokeWidth: 2.5,
-                ),
-              )
-            : Text(label, style: AppStyles.buttonLabel),
+        ],
       ),
-    );
-  }
-}
-
-class _OrDivider extends StatelessWidget {
-  const _OrDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Expanded(child: Divider(color: AppColors.divider, thickness: 1)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text('ó', style: AppStyles.dividerLabel),
-        ),
-        const Expanded(child: Divider(color: AppColors.divider, thickness: 1)),
-      ],
     );
   }
 }
