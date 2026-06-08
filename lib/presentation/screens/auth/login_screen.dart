@@ -5,9 +5,7 @@ import 'package:cuevana7_movies_app_cv/resources/styles/styles.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/app_text_field.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/primary_button.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/or_divider.dart';
-//dedo
-import '../../../implements/datasources/biometric_datasource_impl.dart';
-import '../../../implements/repository/biometric_repository_impl.dart';
+import '../../../services/biometric_service.dart';
 
 class LoginScreen extends StatefulWidget {
   static const name = 'login-screen';
@@ -24,10 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordCtrl = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
-  //dedo
-  final biometricRepo = BiometricRepositoryImpl(
-  BiometricDatasourceImpl(),
-);
+  final biometricService = BiometricService();
   AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
@@ -47,41 +42,17 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = false);
   }
 
-  //dedo
   Future<void> _authenticateWithFingerprint() async {
-  final canUseBiometric =
-      await biometricRepo.canAuthenticate();
-
-  if (!canUseBiometric) {
+    final authenticated = await biometricService.authenticate();
     if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Este dispositivo no tiene biometría disponible',
-        ),
-      ),
-    );
-    return;
+    if (authenticated) {
+      context.go('/');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Autenticación cancelada o fallida')),
+      );
+    }
   }
-
-  final authenticated =
-      await biometricRepo.authenticate();
-
-  if (!mounted) return;
-
-  if (authenticated) {
-    context.go('/home');
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Autenticación cancelada o fallida',
-        ),
-      ),
-    );
-  }
-}
 
   @override
   Widget build(BuildContext context) {
