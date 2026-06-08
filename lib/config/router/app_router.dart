@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cuevana7_movies_app_cv/presentation/screens/movies/home_screen.dart';
 import 'package:cuevana7_movies_app_cv/presentation/screens/auth/login_screen.dart';
@@ -6,7 +7,6 @@ import 'package:cuevana7_movies_app_cv/presentation/screens/auth/splash_screen.d
 
 final appRouter = GoRouter(
   initialLocation: '/splash',
-
   routes: [
     GoRoute(
       path: '/splash',
@@ -16,7 +16,14 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/login',
       name: LoginScreen.name,
-      builder: (context, state) => const LoginScreen(),
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const LoginScreen(),
+        transitionDuration: const Duration(milliseconds: 800),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
     ),
     GoRoute(
       path: '/',
