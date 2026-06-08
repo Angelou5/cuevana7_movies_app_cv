@@ -15,6 +15,8 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _controller;
   late Animation<double> _slideIn;
   late Animation<double> _fadeIn;
+  late Animation<double> _slideOut;
+  late Animation<double> _scaleOut;
 
   bool _navigated = false;
 
@@ -24,31 +26,50 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2700),
+      duration: const Duration(milliseconds: 3800),
     );
 
-    // FASE 1: entra desde abajo (0.0 → 0.18) ~480ms
+    // FASE 1: entra desde abajo (0.0 → 0.13) ~480ms
     _slideIn = Tween<double>(begin: 140.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.0, 0.18, curve: Curves.easeOut),
+        curve: const Interval(0.0, 0.13, curve: Curves.easeOut),
       ),
     );
 
     _fadeIn = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.0, 0.18, curve: Curves.easeOut),
+        curve: const Interval(0.0, 0.13, curve: Curves.easeOut),
       ),
     );
 
-    // FASE 2: espera ~2 segundos (0.18 → 1.0)
-    // Al terminar navega — el Hero se encarga de todo
-    _controller.forward().then((_) {
-      if (!mounted || _navigated) return;
-      _navigated = true;
-      context.go('/login');
+    // FASE 2: espera ~2 segundos (0.13 → 0.60)
+
+    // FASE 3: sube y encoge (0.60 → 1.0) ~1520ms
+    _slideOut = Tween<double>(begin: 0.0, end: -220.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.60, 1.0, curve: Curves.easeInCubic),
+      ),
+    );
+
+    _scaleOut = Tween<double>(begin: 1.0, end: 0.20).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.60, 1.0, curve: Curves.easeInCubic),
+      ),
+    );
+
+    // Navega a mitad de la animación de encogimiento
+    _controller.addListener(() {
+      if (_controller.value >= 0.80 && !_navigated && mounted) {
+        _navigated = true;
+        context.go('/login');
+      }
     });
+
+    _controller.forward();
   }
 
   @override
@@ -69,36 +90,38 @@ class _SplashScreenState extends State<SplashScreen>
       body: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
+          final combinedSlide = _slideIn.value + _slideOut.value;
+
           return Center(
             child: Transform.translate(
-              offset: Offset(0, _slideIn.value),
-              child: Opacity(
-                opacity: _fadeIn.value,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Hero(
-                      tag: 'app-logo',
-                      child: Image.asset(
+              offset: Offset(0, combinedSlide),
+              child: Transform.scale(
+                scale: _scaleOut.value,
+                child: Opacity(
+                  opacity: _fadeIn.value,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(
                         'assets/images/logo2.png',
                         width: logoSize,
                         height: logoSize,
                         fit: BoxFit.contain,
                       ),
-                    ),
-                    Transform.translate(
-                      offset: const Offset(0, -90),
-                      child: Text(
-                        'Cuevana 7',
-                        style: TextStyle(
-                          fontFamily: 'InclusiveSans',
-                          fontSize: fontSize,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
+                      Transform.translate(
+                        offset: const Offset(0, -90),
+                        child: Text(
+                          'Cuevana 7',
+                          style: TextStyle(
+                            fontFamily: 'InclusiveSans',
+                            fontSize: fontSize,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
