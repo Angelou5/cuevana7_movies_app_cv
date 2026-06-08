@@ -12,14 +12,18 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _slideIn;
-  late Animation<double> _fadeIn;
-  late Animation<double> _slideOut;
-  late Animation<double> _scaleOut;
-  late Animation<double> _fadeOut;
+  late final AnimationController _controller;
 
+  late final Animation<double> _slideIn;
+  late final Animation<double> _fadeIn;
+  late final Animation<double> _slideOut;
+  late final Animation<double> _scaleOut;
+  late final Animation<double> _fadeOut;
+
+  bool _started = false;
   bool _navigated = false;
+
+  static const AssetImage _logoImage = AssetImage('assets/images/logo2.png');
 
   @override
   void initState() {
@@ -27,59 +31,94 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 5000),
+      duration: const Duration(milliseconds: 3200),
     );
 
-    // FASE 1: entra desde abajo (0.0 → 0.10) ~500ms
-    _slideIn = Tween<double>(begin: 140.0, end: 0.0).animate(
+    // entrada desde abajo 
+    _slideIn = Tween<double>(begin: 400.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.0, 0.10, curve: Curves.easeOut),
+        curve: const Interval(
+          0.0,
+          0.20,
+          curve: Curves.easeOut,
+        ),
       ),
     );
 
     _fadeIn = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.0, 0.10, curve: Curves.easeOut),
+        curve: const Interval(
+          0.0,
+          0.20,
+          curve: Curves.easeOut,
+        ),
       ),
     );
 
-    // FASE 2: espera ~2 segundos (0.10 → 0.50)
+    // pausa
 
-    // FASE 3: sube y encoge (0.50 → 0.70) ~1000ms — normalizado 0.0 a 1.0
-    _slideOut = Tween<double>(begin: 0.0, end: 1.0).animate(
+    // se hace pequeño y va subiendo
+    _slideOut = Tween<double>(begin: 0.0, end: 1.44).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.50, 0.65, curve: Curves.easeInCubic),
+        curve: const Interval(
+          0.45,
+          0.65,
+          curve: Curves.easeInCubic,
+        ),
       ),
     );
 
-    _scaleOut = Tween<double>(begin: 1.0, end: 0.28).animate(
+    _scaleOut = Tween<double>(begin: 1.0, end: 0.55).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.50, 0.65, curve: Curves.easeInCubic),
+        curve: const Interval(
+          0.45,
+          0.65,
+          curve: Curves.easeInCubic,
+        ),
       ),
     );
 
-    // FASE 4: se queda arriba 1 segundo (0.70 → 0.90)
+    // otra pausa
 
-    // FASE 5: fade out (0.90 → 1.0)
-    _fadeOut = Tween<double>(begin: 1.0, end: 0.0).animate(
+    // pa desaparecer
+    _fadeOut = Tween<double>(begin: 1.00, end: 0.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.90, 1.0, curve: Curves.easeIn),
+        curve: const Interval(
+          0.90,
+          0.99,
+          curve: Curves.easeIn,
+        ),
       ),
     );
+  }
 
-    _controller.addListener(() {
-      if (_controller.value >= 0.50 && !_navigated && mounted) {
-        _navigated = true;
-        context.go('/login');
-      }
-    });
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-    _controller.forward();
+    if (_started) return;
+    _started = true;
+
+    _startSplash();
+  }
+
+  Future<void> _startSplash() async {
+    // Precarga la imagen asi es mejor jeje
+    await precacheImage(_logoImage, context);
+
+    if (!mounted) return;
+
+    await _controller.forward();
+
+    if (!mounted || _navigated) return;
+
+    _navigated = true;
+    context.go('/login');
   }
 
   @override
@@ -90,8 +129,9 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     final shortestSide = size.shortestSide;
+
     final logoSize = (shortestSide * 0.90).clamp(200.0, 560.0);
     final fontSize = (size.width * 0.09).clamp(28.0, 52.0);
 
@@ -100,11 +140,11 @@ class _SplashScreenState extends State<SplashScreen>
       body: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
-          // Calcula el destino dinámico: centro → 50px desde el borde superior
-          // ajustado al tamaño del logo ya escalado
           final targetY =
-              -(size.height / 2) + 30 + (logoSize * _scaleOut.value / 2);
+              -(size.height / 2.5) + 30 + (logoSize * _scaleOut.value / 2);
+
           final combinedSlide = _slideIn.value + (_slideOut.value * targetY);
+
           final combinedOpacity = (_fadeIn.value * _fadeOut.value).clamp(
             0.0,
             1.0,
@@ -117,34 +157,35 @@ class _SplashScreenState extends State<SplashScreen>
                 scale: _scaleOut.value,
                 child: Opacity(
                   opacity: combinedOpacity,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.asset(
-                        'assets/images/logo2.png',
-                        width: logoSize,
-                        height: logoSize,
-                        fit: BoxFit.contain,
-                      ),
-                      Transform.translate(
-                        offset: const Offset(0, -90),
-                        child: Text(
-                          'Cuevana 7',
-                          style: TextStyle(
-                            fontFamily: 'InclusiveSans',
-                            fontSize: fontSize,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  child: child,
                 ),
               ),
             ),
           );
         },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image(
+              image: _logoImage,
+              width: logoSize,
+              height: logoSize,
+              fit: BoxFit.contain,
+            ),
+            Transform.translate(
+              offset: const Offset(0, -90),
+              child: Text(
+                'Cuevana 7',
+                style: TextStyle(
+                  fontFamily: 'InclusiveSans',
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
