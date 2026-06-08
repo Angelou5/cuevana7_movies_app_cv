@@ -6,6 +6,7 @@ import 'package:cuevana7_movies_app_cv/presentation/widgets/app_text_field.dart'
 import 'package:cuevana7_movies_app_cv/presentation/widgets/primary_button.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/or_divider.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/applogo.dart';
+import '../../../services/biometric_service.dart';
 
 class LoginScreen extends StatefulWidget {
   static const name = 'login-screen';
@@ -22,6 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordCtrl = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+  final biometricService = BiometricService();
   AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
@@ -39,6 +41,18 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(seconds: 1));
     setState(() => _isLoading = false);
+  }
+
+  Future<void> _authenticateWithFingerprint() async {
+    final authenticated = await biometricService.authenticate();
+    if (!mounted) return;
+    if (authenticated) {
+      context.go('/');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Autenticación cancelada o fallida')),
+      );
+    }
   }
 
   @override
@@ -148,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 Center(
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: _authenticateWithFingerprint,//dedo
                     child: Container(
                       width: 80,
                       height: 80,

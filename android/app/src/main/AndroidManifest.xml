@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application
+<uses-permission android:name="android.permission.USE_BIOMETRIC"/>    
+<application
         android:label="cuevana7_movies_app_cv"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
