@@ -17,6 +17,7 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _fadeIn;
   late Animation<double> _slideOut;
   late Animation<double> _scaleOut;
+  late Animation<double> _fadeOut;
 
   bool _navigated = false;
 
@@ -26,44 +27,53 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3800),
+      duration: const Duration(milliseconds: 5000),
     );
 
-    // FASE 1: entra desde abajo (0.0 → 0.13) ~480ms
+    // FASE 1: entra desde abajo (0.0 → 0.10) ~500ms
     _slideIn = Tween<double>(begin: 140.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.0, 0.13, curve: Curves.easeOut),
+        curve: const Interval(0.0, 0.10, curve: Curves.easeOut),
       ),
     );
 
     _fadeIn = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.0, 0.13, curve: Curves.easeOut),
+        curve: const Interval(0.0, 0.10, curve: Curves.easeOut),
       ),
     );
 
-    // FASE 2: espera ~2 segundos (0.13 → 0.60)
+    // FASE 2: espera ~2 segundos (0.10 → 0.50)
 
-    // FASE 3: sube y encoge (0.60 → 1.0) ~1520ms
-    _slideOut = Tween<double>(begin: 0.0, end: -220.0).animate(
+    // FASE 3: sube y encoge (0.50 → 0.70) ~1000ms — normalizado 0.0 a 1.0
+    _slideOut = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.60, 1.0, curve: Curves.easeInCubic),
+        curve: const Interval(0.50, 0.65, curve: Curves.easeInCubic),
       ),
     );
 
-    _scaleOut = Tween<double>(begin: 1.0, end: 0.20).animate(
+    _scaleOut = Tween<double>(begin: 1.0, end: 0.28).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.60, 1.0, curve: Curves.easeInCubic),
+        curve: const Interval(0.50, 0.65, curve: Curves.easeInCubic),
       ),
     );
 
-    // Navega a mitad de la animación de encogimiento
+    // FASE 4: se queda arriba 1 segundo (0.70 → 0.90)
+
+    // FASE 5: fade out (0.90 → 1.0)
+    _fadeOut = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.90, 1.0, curve: Curves.easeIn),
+      ),
+    );
+
     _controller.addListener(() {
-      if (_controller.value >= 0.80 && !_navigated && mounted) {
+      if (_controller.value >= 0.55 && !_navigated && mounted) {
         _navigated = true;
         context.go('/login');
       }
@@ -90,7 +100,15 @@ class _SplashScreenState extends State<SplashScreen>
       body: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
-          final combinedSlide = _slideIn.value + _slideOut.value;
+          // Calcula el destino dinámico: centro → 50px desde el borde superior
+          // ajustado al tamaño del logo ya escalado
+          final targetY =
+              -(size.height / 2) + 30 + (logoSize * _scaleOut.value / 2);
+          final combinedSlide = _slideIn.value + (_slideOut.value * targetY);
+          final combinedOpacity = (_fadeIn.value * _fadeOut.value).clamp(
+            0.0,
+            1.0,
+          );
 
           return Center(
             child: Transform.translate(
@@ -98,7 +116,7 @@ class _SplashScreenState extends State<SplashScreen>
               child: Transform.scale(
                 scale: _scaleOut.value,
                 child: Opacity(
-                  opacity: _fadeIn.value,
+                  opacity: combinedOpacity,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
