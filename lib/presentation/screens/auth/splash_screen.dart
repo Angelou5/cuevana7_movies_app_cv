@@ -13,7 +13,10 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
+  late Animation<double> _slideIn;
+  late Animation<double> _fadeIn;
+
+  bool _navigated = false;
 
   @override
   void initState() {
@@ -21,22 +24,30 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 2700),
     );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
+    // FASE 1: entra desde abajo (0.0 → 0.18) ~480ms
+    _slideIn = Tween<double>(begin: 140.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.18, curve: Curves.easeOut),
+      ),
+    );
 
+    _fadeIn = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.18, curve: Curves.easeOut),
+      ),
+    );
+
+    // FASE 2: espera ~2 segundos (0.18 → 1.0)
+    // Al terminar navega — el Hero se encarga de todo
     _controller.forward().then((_) {
-      Future.delayed(const Duration(milliseconds: 1500), () {
-        if (!mounted) return;
-        _controller.reverse().then((_) {
-          if (!mounted) return;
-          context.go('/login');
-        });
-      });
+      if (!mounted || _navigated) return;
+      _navigated = true;
+      context.go('/login');
     });
   }
 
@@ -55,33 +66,40 @@ class _SplashScreenState extends State<SplashScreen>
 
     return Scaffold(
       backgroundColor: const Color(0xFF1D1C1A),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
+      body: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
           return Center(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.asset(
-                    'assets/images/logo2.png',
-                    width: logoSize,
-                    height: logoSize,
-                    fit: BoxFit.contain,
-                  ),
-                  Transform.translate(
-                    offset: const Offset(0, -90),
-                    child: Text(
-                      'Cuevana 7',
-                      style: TextStyle(
-                        fontFamily: 'InclusiveSans',
-                        fontSize: fontSize,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
+            child: Transform.translate(
+              offset: Offset(0, _slideIn.value),
+              child: Opacity(
+                opacity: _fadeIn.value,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Hero(
+                      tag: 'app-logo',
+                      child: Image.asset(
+                        'assets/images/logo2.png',
+                        width: logoSize,
+                        height: logoSize,
+                        fit: BoxFit.contain,
                       ),
                     ),
-                  ),
-                ],
+                    Transform.translate(
+                      offset: const Offset(0, -90),
+                      child: Text(
+                        'Cuevana 7',
+                        style: TextStyle(
+                          fontFamily: 'InclusiveSans',
+                          fontSize: fontSize,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );

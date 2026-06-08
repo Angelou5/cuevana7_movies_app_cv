@@ -17,10 +17,13 @@ class AppLogo extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Image.asset(
-          'assets/images/logo.png',
-          width: resolvedSize,
-          height: resolvedSize,
+        Hero(
+          tag: 'app-logo',
+          child: Image.asset(
+            'assets/images/logo.png',
+            width: resolvedSize,
+            height: resolvedSize,
+          ),
         ),
         SizedBox(height: size.height * 0.02),
         Text(
