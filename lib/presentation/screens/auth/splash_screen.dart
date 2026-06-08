@@ -73,7 +73,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _controller.addListener(() {
-      if (_controller.value >= 0.55 && !_navigated && mounted) {
+      if (_controller.value >= 0.50 && !_navigated && mounted) {
         _navigated = true;
         context.go('/login');
       }
