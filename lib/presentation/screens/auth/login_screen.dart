@@ -5,6 +5,8 @@ import 'package:cuevana7_movies_app_cv/resources/styles/styles.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/app_text_field.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/primary_button.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/or_divider.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/applogo.dart';
+import 'package:cuevana7_movies_app_cv/implements/datasources/biometric_datasource_impl.dart';
 
 class LoginScreen extends StatefulWidget {
   static const name = 'login-screen';
@@ -21,6 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordCtrl = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+  final biometricService = BiometricDatasourceImpl();
   AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
@@ -40,6 +43,18 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = false);
   }
 
+  Future<void> _authenticateWithFingerprint() async {
+    final authenticated = await biometricService.authenticate();
+    if (!mounted) return;
+    if (authenticated) {
+      context.go('/');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Autenticación cancelada o fallida')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const SizedBox(height: 40),
 
-                Center(child: _Logo()),
+                Center(child: AppLogo(logoSize: 62)),
 
                 const SizedBox(height: 24),
 
@@ -68,12 +83,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   hint: 'Correo electrónico',
                   keyboardType: TextInputType.emailAddress,
                   validator: (v) {
-                    if (v == null || v.isEmpty)
+                    if (v == null || v.isEmpty) {
                       return 'El correo es obligatorio';
-                    if (!v.contains('@'))
+                    }
+                    if (!v.contains('@')) {
                       return 'Escribe un correo válido, falta el @';
-                    if (!v.contains('.'))
+                    }
+                    if (!v.contains('.')) {
                       return 'Escribe un correo válido, falta el dominio';
+                    }
                     return null;
                   },
                 ),
@@ -85,10 +103,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   hint: 'Contraseña',
                   obscureText: _obscurePassword,
                   validator: (v) {
-                    if (v == null || v.isEmpty)
+                    if (v == null || v.isEmpty) {
                       return 'La contraseña es obligatoria';
-                    if (v.length < 6)
+                    }
+                    if (v.length < 6) {
                       return 'La contraseña debe tener al menos 6 caracteres';
+                    }
                     return null;
                   },
                   suffixIcon: IconButton(
@@ -142,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 Center(
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: _authenticateWithFingerprint,//dedo
                     child: Container(
                       width: 80,
                       height: 80,
@@ -163,29 +183,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _Logo extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        children: [
-          Image.asset('assets/images/logo.png', width: 62, height: 62),
-          const SizedBox(height: 8),
-          const Text(
-            'Cuevana 7',
-            style: TextStyle(
-              fontFamily: 'InclusiveSans',
-              fontSize: 24,
-              fontWeight: FontWeight.w500,
-              color: AppColors.dark,
-            ),
-          ),
-        ],
       ),
     );
   }
