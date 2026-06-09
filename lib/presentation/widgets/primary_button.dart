@@ -23,7 +23,7 @@ class PrimaryButton extends StatelessWidget {
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.dark,
-          disabledBackgroundColor: AppColors.dark.withOpacity(0.6),
+          disabledBackgroundColor: AppColors.dark.withValues(alpha: 0.6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
