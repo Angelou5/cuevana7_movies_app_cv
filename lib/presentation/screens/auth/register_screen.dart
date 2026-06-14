@@ -82,10 +82,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _nameCtrl,
                   hint: 'Nombre',
                   validator: (v) {
-                    if (v == null || v.isEmpty)
+                    if (v == null || v.isEmpty) {
                       return 'El nombre es obligatorio';
-                    if (v.trim().length < 2)
+                    }
+                    if (v.trim().length < 2) {
                       return 'El nombre debe tener al menos 2 caracteres';
+                    }
                     return null;
                   },
                 ),
@@ -96,10 +98,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _lastNameCtrl,
                   hint: 'Apellido',
                   validator: (v) {
-                    if (v == null || v.isEmpty)
+                    if (v == null || v.isEmpty) {
                       return 'El apellido es obligatorio';
-                    if (v.trim().length < 2)
+                    }
+                    if (v.trim().length < 2) {
                       return 'El apellido debe tener al menos 2 caracteres';
+                    }
                     return null;
                   },
                 ),
@@ -111,12 +115,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   hint: 'Correo electrónico',
                   keyboardType: TextInputType.emailAddress,
                   validator: (v) {
-                    if (v == null || v.isEmpty)
+                    if (v == null || v.isEmpty) {
                       return 'El correo es obligatorio';
-                    if (!v.contains('@'))
+                    }
+                    if (!v.contains('@')) {
                       return 'Escribe un correo válido, falta el @';
-                    if (!v.contains('.'))
+                    }
+                    if (!v.contains('.')) {
                       return 'Escribe un correo válido, falta el dominio';
+                    }
                     return null;
                   },
                 ),
@@ -128,10 +135,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   hint: 'Contraseña',
                   obscureText: _obscurePassword,
                   validator: (v) {
-                    if (v == null || v.isEmpty)
+                    if (v == null || v.isEmpty) {
                       return 'La contraseña es obligatoria';
-                    if (v.length < 6)
+                    }
+                    if (v.length < 6) {
                       return 'La contraseña debe tener al menos 6 caracteres';
+                    }
                     return null;
                   },
                   suffixIcon: IconButton(
@@ -154,8 +163,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   obscureText: _obscureConfirm,
                   validator: (v) {
                     if (v == null || v.isEmpty) return 'Confirma tu contraseña';
-                    if (v != _passwordCtrl.text)
+                    if (v != _passwordCtrl.text) {
                       return 'Las contraseñas no coinciden';
+                    }
                     return null;
                   },
                   suffixIcon: IconButton(
