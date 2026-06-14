@@ -6,7 +6,7 @@ import 'package:cuevana7_movies_app_cv/presentation/widgets/app_text_field.dart'
 import 'package:cuevana7_movies_app_cv/presentation/widgets/primary_button.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/or_divider.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/applogo.dart';
-import '../../../services/biometric_service.dart';
+import '../../../implements/datasources/biometric_datasource_impl.dart';
 
 class LoginScreen extends StatefulWidget {
   static const name = 'login-screen';
@@ -23,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordCtrl = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
-  final biometricService = BiometricService();
+  final biometricService = BiometricDatasourceImpl();
   AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override

@@ -11,7 +11,7 @@ class BiometricDatasourceImpl implements BiometricDatasource {
         localizedReason: 'Usa tu huella para iniciar sesión',
         options: const AuthenticationOptions(
           stickyAuth: true,
-          // biometricOnly: true  ← lo sacamos
+          biometricOnly: false
         ),
       );
     } catch (_) {
@@ -21,6 +21,8 @@ class BiometricDatasourceImpl implements BiometricDatasource {
 
   @override
   Future<bool> canAuthenticate() async {
-    return true; // siempre decimos que sí, el catch en authenticate maneja el error
+   /* final bool canCheckBiometrics = await auth.canCheckBiometrics;
+   */
+    return true; // por ahora decimos que si
   }
 }

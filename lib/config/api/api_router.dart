@@ -12,6 +12,9 @@ class ApiRouter {
     // Endpoints del servidor usando Shelf
     router.post('/signup', usersController.handleSignUp);
     router.post('/signin', usersController.handleSignIn);
+    router.get('/prueba', (Request request) {
+      return Response.ok('¡Servidor Shelf funcionando correctamente!');
+    });
 
     return router;
   }
