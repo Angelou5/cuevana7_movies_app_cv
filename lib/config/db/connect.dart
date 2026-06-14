@@ -9,7 +9,8 @@ Future<PostgreSQLConnection> connect() async {
     host,   // Host
     5432,   // Port
     'cuevana7_movies_app_cv_db', // Database name
-    username: 'postgres', // no siempre es lo mismo eh xd cambienlo si no es el mismo user
+    username:
+        'postgres', // no siempre es lo mismo eh xd cambienlo si no es el mismo user
     password: 'postgres',
   );
 
@@ -17,8 +18,7 @@ Future<PostgreSQLConnection> connect() async {
     await connection.open();
     print('Conexión a postgres');
 
-    
-   /* final results = await connection.query('SELECT * FROM users');
+    /* final results = await connection.query('SELECT * FROM users');
     for (var row in results) {
       print(row);
     }*/
@@ -26,6 +26,5 @@ Future<PostgreSQLConnection> connect() async {
   } catch (e) {
     print('Fallo de conexión: $e');
     throw Exception('Excepción: $e');
-
-   }
   }
+}

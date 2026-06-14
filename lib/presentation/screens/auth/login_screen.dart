@@ -41,6 +41,9 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(seconds: 1));
     setState(() => _isLoading = false);
+
+    if (!mounted) return; // ← AGREGA
+    context.go('/');
   }
 
   Future<void> _authenticateWithFingerprint() async {
