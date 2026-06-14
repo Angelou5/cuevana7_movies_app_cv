@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:shelf/shelf.dart';
-import '../../domain/repositories/users_repositories.dart';
+import '../repository/users_repository.dart';
 
 class UsersController {
-  final UserRepository userRepository;
+  final ImplementUserRepository userRepository;
 
   UsersController({required this.userRepository});
 

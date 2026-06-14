@@ -1,4 +1,4 @@
-import '../../domain/repositories/biometric_repository.dart';
+import '../../domain/repository/biometric_repository.dart';
 import '../../domain/datasources/biometric_datasource.dart';
 
 class BiometricRepositoryImpl implements BiometricRepository {

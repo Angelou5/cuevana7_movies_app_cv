@@ -8,15 +8,13 @@ services:
       - "3000:3000"
     depends_on:
       - db
-    environment:
-      - DB_HOST=db
+    env_file:
+      - .env
   db:
     image: postgres:16-alpine
     platform: linux/amd64
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: cuevana7_movies_app_cv_db
+    env_file:
+      - .env
     ports:
       - "5432:5432"
     volumes:

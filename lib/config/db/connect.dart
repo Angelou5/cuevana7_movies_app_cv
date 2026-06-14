@@ -3,15 +3,18 @@ import 'dart:io';
 import 'package:postgres/postgres.dart';
 
 Future<PostgreSQLConnection> connect() async {
-  final host = Platform.environment['DB_HOST'] ?? 'localhost';
+  final host = Platform.environment['DB_HOST'];
+  final dbName = Platform.environment['DB_NAME'];
+  final dbUser = Platform.environment['POSTGRES_USER'];
+  final dbPassword = Platform.environment['POSTGRES_PASSWORD'];
+  final dbPort = Platform.environment['DB_PORT'];
 
   final connection = PostgreSQLConnection(
-    host,   // Host
-    5432,   // Port
-    'cuevana7_movies_app_cv_db', // Database name
-    username:
-        'postgres', // no siempre es lo mismo eh xd cambienlo si no es el mismo user
-    password: 'postgres',
+    host!,   // Host  
+    int.parse(dbPort!),   // Port
+    dbName!, // Database name
+    username: dbUser!,
+    password: dbPassword!,
   );
 
   try {
