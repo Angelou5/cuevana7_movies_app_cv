@@ -6,11 +6,14 @@
 
 //ORIGEN DE DATOS
 import 'package:cuevana7_movies_app_cv/domain/entities/movie.dart';
+import 'package:cuevana7_movies_app_cv/domain/entities/review.dart';
 
 abstract class MovieDatasources 
 {
   //Para definir la pagina en donde vamos a comenzar a consumir
   Future<List<Movie>> getNowPlaying ({int page = 1});
+
+   Future<List<Review>> getMovieReviews(int movieId);
 }
 
 //https://www.themoviedb.org/

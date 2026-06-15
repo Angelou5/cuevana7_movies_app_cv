@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   static const name = 'splash-screen';
@@ -118,7 +120,8 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted || _navigated) return;
 
     _navigated = true;
-    context.go('/login');
+    final auth = context.read<AuthProvider>();
+    context.go(auth.isAuthenticated ? '/' : '/login');
   }
 
   @override

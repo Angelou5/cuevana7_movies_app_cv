@@ -7,7 +7,6 @@ import 'package:cuevana7_movies_app_cv/presentation/widgets/primary_button.dart'
 import 'package:cuevana7_movies_app_cv/presentation/widgets/account_divider.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class RegisterScreen extends StatefulWidget {
   static const name = 'register-screen';

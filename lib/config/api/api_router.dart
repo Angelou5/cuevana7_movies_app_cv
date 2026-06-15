@@ -21,10 +21,10 @@ class ApiRouter {
     // Aqui se colocaran rutas protegidas por jwt
 
     final routerProtected = Router();
-
+    // ejemplo xd
     routerProtected.get('/protegida', (Request request) {
       final usuarioPayload = request.context['usuarioPayload'];
-      return Response.ok('¡Ruta accedida del usuario: $usuarioPayload');
+      return Response.ok('Ruta accedida del usuario: $usuarioPayload');
     });
 
     final pipelineProtegida = Pipeline()
@@ -32,7 +32,7 @@ class ApiRouter {
     .addHandler(routerProtected.call);
     
 
-    // Aplicamos el middleware de verificación JWT a las rutas protegidas
+    
     router.mount('/api', pipelineProtegida);
 
     return router;

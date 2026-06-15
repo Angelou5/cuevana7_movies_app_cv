@@ -14,27 +14,27 @@ Middleware verificarJwt() {
           'Acceso denegado: Falta el token o el formato es incorrecto');
       }
 
-      // 2. Le quitamos la palabra "Bearer " para quedarnos solo con el token largo
+      // aqui solo extraemos el token
+      print(authHeader);
       final token = authHeader.substring(7);
 
       try {
-        // 3. Verificamos que la firma sea tuya y que no haya caducado (los 3 días)
+        // verificar la firma 
         final jwtSecret = Platform.environment['JWT_SECRET_KEY'];
         final jwt = JWT.verify(token, SecretKey(jwtSecret!));
 
-        // 4. (Opcional pero pro) Guardamos los datos del usuario en el Request
-        // Así tu controlador sabe QUÍEN hizo la petición
+        // guardar datos del usuario en request
         final peticionModificada = request
         .change(context: {'usuarioPayload': jwt.payload});
 
-        // 5. El cadenero lo deja pasar a la siguiente función (tu controlador)
+        // todo bien
         return Future.sync(() => innerHandler(peticionModificada));
 
       } catch (e) {
-        // Si el token caducó o es falso, la librería lanza un error y lo rebotamos
+        //si caduca o es falso
         return Response.forbidden(
           'Token inválido o expirado jasjda');
       }
     };
   };
-}
+} 

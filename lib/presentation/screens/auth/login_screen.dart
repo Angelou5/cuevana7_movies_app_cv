@@ -9,7 +9,9 @@ import 'package:cuevana7_movies_app_cv/presentation/widgets/applogo.dart';
 import '../../../implements/datasources/biometric_datasource_impl.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   static const name = 'login-screen';
@@ -65,11 +67,13 @@ class _LoginScreenState extends State<LoginScreen> {
         final data = jsonDecode(response.body);
         final String token = data['token'];
 
-        // aqui se guarda el token como jwt_token
-        const storage = FlutterSecureStorage();
-        await storage.write(key: 'jwt_token', value: token);
+        await context.read<AuthProvider>().setToken(token);
 
-        // aqui redirige a la pantalla principal
+        const storage = FlutterSecureStorage();
+        await storage.write(key: 'saved_email', value: _emailCtrl.text.trim());
+        await storage.write(key: 'saved_password', value: _passwordCtrl.text);
+
+        if (!mounted) return;
         context.go('/');
       } else {
         // Credenciales inválidas 
@@ -88,14 +92,56 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _authenticateWithFingerprint() async {
+    final auth = context.read<AuthProvider>();
+
+    if (auth.isAuthenticated) {
+      final ok = await biometricService.authenticate();
+      if (!mounted) return;
+      if (ok) context.go('/');
+      return;
+    }
+
+    const storage = FlutterSecureStorage();
+    final savedEmail = await storage.read(key: 'saved_email');
+    final savedPassword = await storage.read(key: 'saved_password');
+
+    if (savedEmail == null || savedPassword == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Primero inicia sesión con tu correo')),
+      );
+      return;
+    }
+
     final authenticated = await biometricService.authenticate();
     if (!mounted) return;
-    if (authenticated) {
-      context.go('/');
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Autenticación cancelada o fallida')),
+    if (!authenticated) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final url = Uri.parse('https://pixonsite.org/signin');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': savedEmail, 'password': savedPassword}),
       );
+      if (!mounted) return;
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        await auth.setToken(data['token']);
+        context.go('/');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sesión expirada, inicia sesión de nuevo')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error de conexión: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
