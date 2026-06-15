@@ -4,10 +4,10 @@ import 'package:postgres/postgres.dart';
 
 Future<PostgreSQLConnection> connect() async {
   final host = Platform.environment['DB_HOST'];
-  final dbName = Platform.environment['DB_NAME'];
+  final dbName = Platform.environment['POSTGRES_DB'];
   final dbUser = Platform.environment['POSTGRES_USER'];
   final dbPassword = Platform.environment['POSTGRES_PASSWORD'];
-  final dbPort = Platform.environment['DB_PORT'];
+  final dbPort = Platform.environment['POSTGRES_PORT'];
 
   final connection = PostgreSQLConnection(
     host!,   // Host  

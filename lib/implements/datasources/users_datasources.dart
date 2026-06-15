@@ -9,11 +9,18 @@ class UsersDataSourceImplement implements UsersDataSource {
 
   UsersDataSourceImplement(this.connection);// humberto
 
+  Roles _mapStringToRole(dynamic roleString) {
+    if (roleString == 'admin') {
+      return Roles.admin;
+    }
+    return Roles.user; // Valor por defecto para estar seguros
+  }
+
   @override
   Future<User> getUser(String userId) async {
     final conn = connection;
     final result = await conn.query(
-      'SELECT id, name, email, password, rol, createdAt, updatedAt FROM users WHERE id = @userId',
+      'SELECT id, name, email, password_hash, role, created_at, updated_at FROM users WHERE id = @userId',
       substitutionValues: {'userId': userId},
     );
 
@@ -23,7 +30,7 @@ class UsersDataSourceImplement implements UsersDataSource {
 
     final row = result.first;
     return User(id: row[0], name: row[1], email: row[2]
-    , password: row[3], rol: row[4], createdAt: row[5], updatedAt: row[6]);
+    , password: row[3], rol: _mapStringToRole(row[4]), createdAt: row[5], updatedAt: row[6]);
   }
   
   @override
@@ -32,10 +39,10 @@ class UsersDataSourceImplement implements UsersDataSource {
     final result =await conn.query(
       r'''
         INSERT INTO users 
-        ( name, email, password)
+        ( name, email, password_hash)
         VALUES 
         (@name, @email, @password)
-        RETURNING id, name, email, password, rol, createdAt, updatedAt;
+        RETURNING id, name, email, password_hash, role, created_at, updated_at;
        ''',
       substitutionValues: {
         'name': name,
@@ -52,7 +59,7 @@ class UsersDataSourceImplement implements UsersDataSource {
       name: result.first[1],
       email: result.first[2],
       password: result.first[3],
-      rol: result.first[4],
+      rol: _mapStringToRole(result.first[4]),
       createdAt: result.first[5],
       updatedAt: result.first[6]
     );
@@ -62,7 +69,7 @@ class UsersDataSourceImplement implements UsersDataSource {
   Future <User?> findByEmail(String email) async {
     final conn = connection;
     final result = await conn.query(
-      'SELECT id, name, email, password, rol, createdAt, updatedAt FROM users WHERE email = @email',
+      'SELECT id, name, email, password_hash, role, created_at, updated_at FROM users WHERE email = @email',
       substitutionValues: {'email': email},
     );
 
@@ -71,6 +78,6 @@ class UsersDataSourceImplement implements UsersDataSource {
     }
 
     final row = result.first;
-    return User(id: row[0], name: row[1], email: row[2], password: row[3], rol: row[4], createdAt: row[5], updatedAt: row[6]);
+    return User(id: row[0], name: row[1], email: row[2], password: row[3], rol: _mapStringToRole(row[4]), createdAt: row[5], updatedAt: row[6]);
   }
 }

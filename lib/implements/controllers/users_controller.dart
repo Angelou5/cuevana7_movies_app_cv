@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shelf/shelf.dart';
 import '../repository/users_repository.dart';
+import 'package:cuevana7_movies_app_cv/services/jwt_service.dart';
 
 class UsersController {
   final ImplementUserRepository userRepository;
@@ -65,6 +66,8 @@ class UsersController {
         body['password'],
       );
 
+      final token = GenerarJWT(user);
+
       return Response.ok(
         jsonEncode({
           'message': 'Login exitoso',
@@ -73,14 +76,23 @@ class UsersController {
             'name': user.name,
             'email': user.email,
             'rol': user.rol.name,
-          }
+          },
+          'token': token,
         }),
         headers: {'content-type': 'application/json'},
       );
     } catch (e) {
+      // 1. IMPRIME EL ERROR REAL EN TU CONSOLA xd
+      print('==== ERROR DETONADO EN SIGNIN ====');
+      print(e); 
+      
       return Response(
-        401, // Unauthorized
-        body: jsonEncode({'error': 'Credenciales inválidas'}),
+        401,
+        // 2. MÁNDALO TAMBIÉN EN EL JSON PARA QUE LO VEAS EN POSTMAN jasjda
+        body: jsonEncode({
+          'error': 'Credenciales inválidas',
+          'detalle_real': e.toString(), 
+        }),
         headers: {'content-type': 'application/json'},
       );
     }

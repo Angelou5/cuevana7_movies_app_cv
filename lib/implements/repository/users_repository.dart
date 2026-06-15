@@ -12,7 +12,6 @@ class ImplementUserRepository implements UserRepository {
   @override
   Future<User> signUp(String name, String email, String password) async {
   
-
     try {
       
       final existingUser = await dataSource.findByEmail(email);
@@ -35,7 +34,6 @@ class ImplementUserRepository implements UserRepository {
   @override
   Future<User> signIn(String email, String password) async {
     
-
     try {
       // Ajustamos el SELECT con 'password_hash' y 'role'
       final User? result = await dataSource.findByEmail(email);
@@ -45,6 +43,7 @@ class ImplementUserRepository implements UserRepository {
       }
       
       // TODO: falta jwt
+        
    
       return result; 
     } catch (e) {

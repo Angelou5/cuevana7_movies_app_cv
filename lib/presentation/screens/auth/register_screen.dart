@@ -5,6 +5,9 @@ import 'package:cuevana7_movies_app_cv/resources/styles/styles.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/app_text_field.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/primary_button.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/account_divider.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class RegisterScreen extends StatefulWidget {
   static const name = 'register-screen';
@@ -38,14 +41,53 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _onRegisterPressed() async {
+ void _onRegisterPressed() async {
     setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
 
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() => _isLoading = false);
+
+    try {
+      final url = Uri.parse('https://pixonsite.org/signup');
+      
+      // Juntamos el nombre y apellido para el backend xd
+      final fullName = '${_nameCtrl.text.trim()} ${_lastNameCtrl.text.trim()}';
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'name': fullName,
+          'email': _emailCtrl.text.trim(),
+          'password': _passwordCtrl.text,
+        }),
+      );
+
+      if (!mounted) return;
+
+      // revisamos el codigo 201 que es de crear
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Usuario registrado con éxito')),
+        );
+      
+        context.go('/login');
+      } else {
+        // El correo ya existe o faltan datos
+        final data = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['error'] ?? 'Error al registrar xd')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error de conexión: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override

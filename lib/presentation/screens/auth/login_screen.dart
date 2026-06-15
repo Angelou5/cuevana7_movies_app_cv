@@ -7,6 +7,9 @@ import 'package:cuevana7_movies_app_cv/presentation/widgets/primary_button.dart'
 import 'package:cuevana7_movies_app_cv/presentation/widgets/or_divider.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/applogo.dart';
 import '../../../implements/datasources/biometric_datasource_impl.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LoginScreen extends StatefulWidget {
   static const name = 'login-screen';
@@ -33,17 +36,55 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _onLoginPressed() async {
+ void _onLoginPressed() async {
     setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
 
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() => _isLoading = false);
 
-    if (!mounted) return; // ← AGREGA
-    context.go('/');
+    try {
+
+      // este es el dominio
+      final url = Uri.parse('https://pixonsite.org/signin');
+      
+      // peticion
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': _emailCtrl.text.trim(),
+          'password': _passwordCtrl.text,
+        }),
+      );
+
+      if (!mounted) return;
+
+      // verificar si funciona y nos permite
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final String token = data['token'];
+
+        // aqui se guarda el token como jwt_token
+        const storage = FlutterSecureStorage();
+        await storage.write(key: 'jwt_token', value: token);
+
+        // aqui redirige a la pantalla principal
+        context.go('/');
+      } else {
+        // Credenciales inválidas 
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Correo o contraseña incorrectos xd')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error de conexión: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _authenticateWithFingerprint() async {
