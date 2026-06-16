@@ -1,16 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart';
+import 'package:cuevana7_movies_app_cv/presentation/providers/movie_provider.dart';
 import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   static const String name = 'home';
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      context.read<MovieProvider>().loadNowPlaying();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final movieProvider = context.watch<MovieProvider>();
+
     return Scaffold(
       backgroundColor: AppColors.background,
 
-      // ── Bottom Navigation Bar fijo
+      // ── Bottom Navigation Bar fijo abajo ─────────────────────────
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: AppColors.dark,
@@ -30,16 +49,17 @@ class HomeScreen extends StatelessWidget {
       ),
 
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ── Título "Home"
-                  const Padding(
-                    padding: EdgeInsets.only(left: 16, top: 8, bottom: 4),
-                    child: Text(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Título "Home" + botón logout ───────────────────────
+              Padding(
+                padding: const EdgeInsets.only(left: 16, right: 8, top: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
                       'Home',
                       style: TextStyle(
                         color: AppColors.hint,
@@ -48,216 +68,183 @@ class HomeScreen extends StatelessWidget {
                         fontWeight: FontWeight.w400,
                       ),
                     ),
-                  ),
-
-                  // ── Barra de búsqueda y logo
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    child: Row(
-                      children: [
-                        // Search bar
-                        Expanded(
-                          child: Container(
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: AppColors.inputFill,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const Row(
-                              children: [
-                                SizedBox(width: 14),
-                                Icon(
-                                  Icons.search,
-                                  color: AppColors.hint,
-                                  size: 20,
-                                ),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Buscar',
-                                  style: TextStyle(
-                                    color: AppColors.hint,
-                                    fontSize: 16,
-                                    fontFamily: 'InclusiveSans',
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        // Logo pequeño
-                        Hero(
-                          tag: 'app-logo',
-                          child: Image.asset(
-                            'assets/images/logo.png',
-                            width: 36,
-                            height: 36,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // ── Banner hero / carrusel principal
-                  _HeroBanner(),
-
-                  const SizedBox(height: 16),
-
-                  // ── Sección: Géneros populares
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'Géneros populares',
-                      style: TextStyle(
-                        color: AppColors.dark,
-                        fontSize: 16,
-                        fontFamily: 'InclusiveSans',
-                        fontWeight: FontWeight.w500,
+                    IconButton(
+                      icon: const Icon(
+                        Icons.logout,
+                        color: AppColors.hint,
+                        size: 20,
                       ),
+                      onPressed: () {
+                        context.read<AuthProvider>().logout();
+                        context.go('/login');
+                      },
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Chips de géneros con scroll horizontal
-                  _GenreChipsRow(),
-
-                  const SizedBox(height: 20),
-
-                  // ── Sección: Novedades (carrusel horizontal)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'Novedades',
-                      style: TextStyle(
-                        color: AppColors.dark,
-                        fontSize: 16,
-                        fontFamily: 'InclusiveSans',
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _MovieCarousel(),
-
-                  const SizedBox(height: 20),
-
-                  // ── Sección: Para ver en familia
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'Para ver en familia',
-                      style: TextStyle(
-                        color: AppColors.dark,
-                        fontSize: 16,
-                        fontFamily: 'InclusiveSans',
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _HeroBanner(),
-
-                  const SizedBox(height: 20),
-
-                  // ── Sección: Infantiles
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'Infantiles',
-                      style: TextStyle(
-                        color: AppColors.dark,
-                        fontSize: 16,
-                        fontFamily: 'InclusiveSans',
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _MovieCarousel(),
-
-                  const SizedBox(height: 20),
-
-                  // ── Sección: Historias biográficas
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'Historias biográficas',
-                      style: TextStyle(
-                        color: AppColors.dark,
-                        fontSize: 16,
-                        fontFamily: 'InclusiveSans',
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _MovieCarousel(),
-
-                  const SizedBox(height: 20),
-
-                  // ── Sección: Para ver en familia
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'Para ver en familia',
-                      style: TextStyle(
-                        color: AppColors.dark,
-                        fontSize: 16,
-                        fontFamily: 'InclusiveSans',
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _HeroBanner(),
-
-                  const SizedBox(height: 20),
-
-                  // ── Sección: Opiniones
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'Opiniones',
-                      style: TextStyle(
-                        color: AppColors.dark,
-                        fontSize: 16,
-                        fontFamily: 'InclusiveSans',
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Lista de reviews
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      children: [
-                        _ReviewCard(rating: 4),
-                        const SizedBox(height: 10),
-                        _ReviewCard(rating: 4),
-                        const SizedBox(height: 10),
-                        _ReviewCard(rating: 4),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+
+              // ── Barra de búsqueda + logo ────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: AppColors.inputFill,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Row(
+                          children: [
+                            SizedBox(width: 14),
+                            Icon(Icons.search, color: AppColors.hint, size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'Buscar',
+                              style: TextStyle(
+                                color: AppColors.hint,
+                                fontSize: 16,
+                                fontFamily: 'InclusiveSans',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Hero(
+                      tag: 'app-logo',
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        width: 36,
+                        height: 36,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // ── Banner hero principal ───────────────────────────────
+              _HeroBanner(
+                movie: movieProvider.movies.isNotEmpty
+                    ? movieProvider.movies.first
+                    : null,
+              ),
+
+              const SizedBox(height: 16),
+
+              // ── Sección: Géneros populares ──────────────────────────
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Géneros populares',
+                  style: TextStyle(
+                    color: AppColors.dark,
+                    fontSize: 16,
+                    fontFamily: 'InclusiveSans',
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              _GenreChipsRow(),
+
+              const SizedBox(height: 20),
+
+              // ── Sección: Novedades (carrusel real desde la API) ─────
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Novedades',
+                  style: TextStyle(
+                    color: AppColors.dark,
+                    fontSize: 16,
+                    fontFamily: 'InclusiveSans',
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              _MovieCarousel(movieProvider: movieProvider),
+
+              const SizedBox(height: 20),
+
+              // ── Sección: Para ver en familia (banner) ───────────────
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Para ver en familia',
+                  style: TextStyle(
+                    color: AppColors.dark,
+                    fontSize: 16,
+                    fontFamily: 'InclusiveSans',
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              _HeroBanner(
+                movie: movieProvider.movies.length > 1
+                    ? movieProvider.movies[1]
+                    : null,
+              ),
+
+              const SizedBox(height: 20),
+
+              // ── Sección: Opiniones (reviews reales desde la API) ────
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Opiniones',
+                  style: TextStyle(
+                    color: AppColors.dark,
+                    fontSize: 16,
+                    fontFamily: 'InclusiveSans',
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: movieProvider.movieReviews.isEmpty
+                    ? const Text(
+                        'No hay opiniones disponibles',
+                        style: TextStyle(
+                          color: AppColors.hint,
+                          fontFamily: 'InclusiveSans',
+                        ),
+                      )
+                    : Column(
+                        children: movieProvider.movieReviews.take(3).map((mr) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: _ReviewCard(movieReview: mr),
+                          );
+                        }).toList(),
+                      ),
+              ),
+
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-// ── Banner hero
+// ── Banner hero con película real o placeholder rojo ──────────────
 class _HeroBanner extends StatelessWidget {
+  final dynamic movie;
+  const _HeroBanner({this.movie});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -268,14 +255,29 @@ class _HeroBanner extends StatelessWidget {
           color: const Color(0xFFB22222),
           borderRadius: BorderRadius.circular(16),
         ),
+        clipBehavior: Clip.hardEdge,
+        child: movie != null && movie.posterPath.isNotEmpty
+            ? Image.network(
+                movie.posterPath,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                errorBuilder: (_, __, ___) => const SizedBox(),
+              )
+            : null,
       ),
     );
   }
 }
 
-// ── Chips de géneros con scroll horizontal
+// ── Chips de géneros con scroll horizontal ──────────────────────────
 class _GenreChipsRow extends StatelessWidget {
-  final List<String> genres = const ['Acsi', 'Comedia', 'Romance', 'Acción'];
+  final List<String> genres = const [
+    'Terror',
+    'Comedia',
+    'Suspenso',
+    'Romance',
+    'Acción',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -294,7 +296,6 @@ class _GenreChipsRow extends StatelessWidget {
   }
 }
 
-// ── Chip individual de género
 class _GenreChip extends StatelessWidget {
   final String label;
   const _GenreChip({required this.label});
@@ -319,12 +320,35 @@ class _GenreChip extends StatelessWidget {
   }
 }
 
-// ── Carrusel horizontal de películas con fade en los bordes
+// ── Carrusel horizontal con datos reales + difuminado en bordes ────
 class _MovieCarousel extends StatelessWidget {
+  final MovieProvider movieProvider;
+  const _MovieCarousel({required this.movieProvider});
+
   @override
   Widget build(BuildContext context) {
+    if (movieProvider.isLoading && movieProvider.movies.isEmpty) {
+      return const SizedBox(
+        height: 130,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (movieProvider.error != null && movieProvider.movies.isEmpty) {
+      return SizedBox(
+        height: 130,
+        child: Center(
+          child: Text(
+            '${movieProvider.error}',
+            style: const TextStyle(
+              color: AppColors.hint,
+              fontFamily: 'InclusiveSans',
+            ),
+          ),
+        ),
+      );
+    }
+    // difuminado
     return ShaderMask(
-      // Difuminado en los bordes izquierdo y derecho
       shaderCallback: (bounds) => const LinearGradient(
         begin: Alignment.centerLeft,
         end: Alignment.centerRight,
@@ -342,18 +366,29 @@ class _MovieCarousel extends StatelessWidget {
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: 6,
+          itemCount: movieProvider.movies.length + 1,
           separatorBuilder: (_, __) => const SizedBox(width: 10),
           itemBuilder: (context, index) {
-            // Card placeholder de película
-            return Container(
-              width: 90,
-              height: 130,
-              decoration: BoxDecoration(
-                color: AppColors.inputFill,
-                borderRadius: BorderRadius.circular(12),
-              ),
-            );
+            if (index == movieProvider.movies.length) {
+              return Center(
+                child: movieProvider.isLoading
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : GestureDetector(
+                        onTap: () => movieProvider.loadNextPage(),
+                        child: const Icon(
+                          Icons.chevron_right,
+                          color: AppColors.hint,
+                          size: 22,
+                        ),
+                      ),
+              );
+            }
+            final movie = movieProvider.movies[index];
+            return _MovieCard(movie: movie);
           },
         ),
       ),
@@ -361,13 +396,48 @@ class _MovieCarousel extends StatelessWidget {
   }
 }
 
-// ── Card de opinión / review
-class _ReviewCard extends StatelessWidget {
-  final int rating;
-  const _ReviewCard({required this.rating});
+// ── Card individual de película (poster real) ──────────────────────
+class _MovieCard extends StatelessWidget {
+  final dynamic movie;
+  const _MovieCard({this.movie});
 
   @override
   Widget build(BuildContext context) {
+    return Container(
+      width: 90,
+      decoration: BoxDecoration(
+        color: AppColors.inputFill,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      clipBehavior: Clip.hardEdge,
+      child: movie != null && movie.posterPath.isNotEmpty
+          ? Image.network(
+              movie.posterPath,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const SizedBox(),
+            )
+          : null,
+    );
+  }
+}
+
+// ── Card de opinión con datos reales de la API ──────────────────────
+class _ReviewCard extends StatefulWidget {
+  final MovieReview movieReview;
+  const _ReviewCard({required this.movieReview});
+
+  @override
+  State<_ReviewCard> createState() => _ReviewCardState();
+}
+
+class _ReviewCardState extends State<_ReviewCard> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final review = widget.movieReview.review;
+    final starRating = review.rating != null ? (review.rating! / 2).round() : 0;
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -377,7 +447,6 @@ class _ReviewCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Avatar circular
           Container(
             width: 34,
             height: 34,
@@ -396,25 +465,58 @@ class _ReviewCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Estrellas de calificación
+                Text(
+                  widget.movieReview.movieTitle,
+                  style: const TextStyle(
+                    color: AppColors.dark,
+                    fontSize: 13,
+                    fontFamily: 'InclusiveSans',
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  review.author,
+                  style: const TextStyle(
+                    color: AppColors.hint,
+                    fontSize: 11,
+                    fontFamily: 'InclusiveSans',
+                  ),
+                ),
+                const SizedBox(height: 2),
                 Row(
                   children: List.generate(5, (i) {
                     return Icon(
-                      i < rating ? Icons.star : Icons.star_border,
+                      i < starRating ? Icons.star : Icons.star_border,
                       color: AppColors.dark,
                       size: 14,
                     );
                   }),
                 ),
                 const SizedBox(height: 4),
-                // Texto de la reseña
-                const Text(
-                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc gravida sagittis tempus.',
-                  style: TextStyle(
+                Text(
+                  review.content,
+                  maxLines: _isExpanded ? null : 2,
+                  overflow: _isExpanded
+                      ? TextOverflow.visible
+                      : TextOverflow.ellipsis,
+                  style: const TextStyle(
                     color: AppColors.dark,
                     fontSize: 12,
                     fontFamily: 'InclusiveSans',
                     height: 1.5,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => setState(() => _isExpanded = !_isExpanded),
+                  child: Text(
+                    _isExpanded ? 'Leer menos' : 'Leer más',
+                    style: const TextStyle(
+                      color: AppColors.dark,
+                      fontSize: 12,
+                      fontFamily: 'InclusiveSans',
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
