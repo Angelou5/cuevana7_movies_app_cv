@@ -312,7 +312,7 @@ class _AutoHeroBannerState extends State<_AutoHeroBanner> {
         curve: Curves.easeInOut,
       );
 
-      /
+      
       setState(() => _currentPage = nextPage);
     });
   }
