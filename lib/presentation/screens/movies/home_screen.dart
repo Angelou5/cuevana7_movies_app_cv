@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:cuevana7_movies_app_cv/domain/entities/movie.dart';
+import 'package:cuevana7_movies_app_cv/implements/datasources/movie_db_datasource.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/movie_provider.dart';
 import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
@@ -14,12 +17,27 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final _movieDbDatasource = MovieDbDatasource();
+  List<Movie> _familyMovies = [];
+
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
       context.read<MovieProvider>().loadNowPlaying();
     });
+    _loadFamilyMovies();
+  }
+
+  Future<void> _loadFamilyMovies() async {
+    try {
+      final movies = await _movieDbDatasource.getMoviesByGenre(10751);
+      if (!mounted) return;
+      setState(() => _familyMovies = movies);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _familyMovies = []);
+    }
   }
 
   @override
@@ -98,20 +116,27 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: AppColors.inputFill,
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Row(
-                          children: [
-                            SizedBox(width: 14),
-                            Icon(Icons.search, color: AppColors.hint, size: 20),
-                            SizedBox(width: 8),
-                            Text(
-                              'Buscar',
-                              style: TextStyle(
-                                color: AppColors.hint,
-                                fontSize: 16,
-                                fontFamily: 'InclusiveSans',
-                              ),
+                        child: const TextField(
+                          style: TextStyle(
+                            color: AppColors.dark,
+                            fontSize: 16,
+                            fontFamily: 'InclusiveSans',
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Buscar',
+                            hintStyle: TextStyle(
+                              color: AppColors.hint,
+                              fontFamily: 'InclusiveSans',
                             ),
-                          ],
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                            prefixIcon: Padding(
+                              padding: EdgeInsets.only(left: 6),
+                              child: Icon(Icons.search, color: AppColors.hint, size: 20),
+                            ),
+                            prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
+                          ),
                         ),
                       ),
                     ),
@@ -130,11 +155,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 10),
 
-              // ── Banner hero principal ───────────────────────────────
-              _HeroBanner(
-                movie: movieProvider.movies.isNotEmpty
-                    ? movieProvider.movies.first
-                    : null,
+              // ── Banner principal: carrusel AUTOMÁTICO cada 4s ───────
+              // Le pasamos la lista completa de películas; el widget
+              // internamente se encarga de rotarlas solo con un Timer.
+              _AutoHeroBanner(
+                movies: movieProvider.movies,
+                // key distinta para que Flutter no confunda este timer
+                // con el de "Para ver en familia" de más abajo
+                key: const ValueKey('hero-novedades'),
               ),
 
               const SizedBox(height: 16),
@@ -175,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 20),
 
-              // ── Sección: Para ver en familia (banner) ───────────────
+              // ── Sección: Para ver en familia (carrusel automático) ──
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
@@ -189,10 +217,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              _HeroBanner(
-                movie: movieProvider.movies.length > 1
-                    ? movieProvider.movies[1]
-                    : null,
+              _AutoHeroBanner(
+                movies: _familyMovies,
+                key: const ValueKey('hero-familia'),
               ),
 
               const SizedBox(height: 20),
@@ -240,30 +267,128 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ── Banner hero con película real o placeholder rojo ──────────────
-class _HeroBanner extends StatelessWidget {
-  final dynamic movie;
-  const _HeroBanner({this.movie});
+// ════════════════════════════════════════════════════════════════════
+// BANNER HERO AUTOMÁTICO
+// Carrusel que cambia de película sola cada 4 segundos usando un
+// PageView controlado por un Timer.periodic.
+// ════════════════════════════════════════════════════════════════════
+class _AutoHeroBanner extends StatefulWidget {
+  final List<dynamic> movies;
+  const _AutoHeroBanner({required this.movies, super.key});
+
+  @override
+  State<_AutoHeroBanner> createState() => _AutoHeroBannerState();
+}
+
+class _AutoHeroBannerState extends State<_AutoHeroBanner> {
+  // Controlador del PageView: nos permite "ordenarle" que cambie de
+  // página mediante código, sin que el usuario deslice con el dedo.
+  late final PageController _pageController;
+
+  // Timer que se repite cada 4 segundos.
+  Timer? _timer;
+
+  // Índice de la página/película actual que se está mostrando.
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _startAutoSlide();
+  }
+
+  // Crea (o reinicia) el temporizador de 4 segundos.
+  void _startAutoSlide() {
+    _timer?.cancel(); // por seguridad, cancelamos cualquier timer previo
+    _timer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (widget.movies.isEmpty) return; // nada que mostrar todavía
+
+      // Calculamos cuál es la siguiente página. Si llegamos al final
+      // de la lista, regresamos a 0 para que el ciclo sea infinito.
+      final nextPage = (_currentPage + 1) % widget.movies.length;
+
+      // animateToPage hace la transición visual (deslizamiento) hacia
+      // la siguiente película, en vez de saltar de golpe.
+      _pageController.animateToPage(
+        nextPage,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+
+      // Actualizamos el estado para que el contador interno coincida
+      // con la página que se está mostrando ahora.
+      setState(() => _currentPage = nextPage);
+    });
+  }
+
+  @override
+  void dispose() {
+    // MUY IMPORTANTE: cancelar el Timer y el PageController al salir
+    // de la pantalla, o seguirán corriendo en memoria (memory leak).
+    _timer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Si todavía no han cargado películas, mostramos el placeholder
+    // rojo fijo (sin animación, porque no hay nada que rotar).
+    if (widget.movies.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Container(
+          // Ya no necesitamos 220 de alto: ese tamaño era para que
+          // entrara el póster VERTICAL completo. Ahora usamos el
+          // backdrop (imagen horizontal), que se ve bien en un
+          // banner más bajo, tipo 180.
+          height: 180,
+          decoration: BoxDecoration(
+            color: const Color(0xFFB22222),
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        height: 160,
-        decoration: BoxDecoration(
-          color: const Color(0xFFB22222),
-          borderRadius: BorderRadius.circular(16),
+      child: SizedBox(
+        height: 180,
+        child: PageView.builder(
+          controller: _pageController,
+          // El usuario también puede deslizar manualmente si quiere;
+          // el Timer seguirá funcionando igual cada 4s desde ahí.
+          itemCount: widget.movies.length,
+          itemBuilder: (context, index) {
+            final movie = widget.movies[index];
+            return Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFFB22222),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              clipBehavior: Clip.hardEdge,
+              // OJO: usamos movie.backdropPath en vez de
+              // movie.posterPath. El backdrop es la imagen
+              // HORIZONTAL que TMDB da para cada película (pensada
+              // justo para banners anchos como este). El poster es
+              // vertical, por eso se veía cortado/feo con cover.
+              child: movie != null && movie.backdropPath.isNotEmpty
+                  ? Image.network(
+                      movie.backdropPath,
+                      // Con el backdrop horizontal, cover ahora SÍ
+                      // llena el contenedor sin recortar partes
+                      // importantes (no hay caras/títulos cortados).
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      errorBuilder: (_, __, ___) => const SizedBox(),
+                    )
+                  : null,
+            );
+          },
         ),
-        clipBehavior: Clip.hardEdge,
-        child: movie != null && movie.posterPath.isNotEmpty
-            ? Image.network(
-                movie.posterPath,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                errorBuilder: (_, __, ___) => const SizedBox(),
-              )
-            : null,
       ),
     );
   }
@@ -347,7 +472,7 @@ class _MovieCarousel extends StatelessWidget {
         ),
       );
     }
-    // difuminado
+    // difuminado en los bordes laterales del carrusel
     return ShaderMask(
       shaderCallback: (bounds) => const LinearGradient(
         begin: Alignment.centerLeft,
@@ -413,7 +538,11 @@ class _MovieCard extends StatelessWidget {
       child: movie != null && movie.posterPath.isNotEmpty
           ? Image.network(
               movie.posterPath,
+              // Mismo ajuste aquí: cover recortaba el póster y se
+              // veía desproporcionado dentro de la card pequeña.
               fit: BoxFit.cover,
+              alignment: Alignment
+                  .topCenter, // prioriza mostrar la cara/título arriba del póster, en vez de recortar por el centro
               errorBuilder: (_, __, ___) => const SizedBox(),
             )
           : null,
