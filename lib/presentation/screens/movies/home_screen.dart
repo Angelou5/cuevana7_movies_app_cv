@@ -47,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
 
-      // ── Bottom Navigation Bar fijo abajo ─────────────────────────
+      // Bottom Navigation Bar fijo abajo 
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: AppColors.dark,
@@ -71,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Título "Home" + botón logout ───────────────────────
+              // Título "Home" + botón logout 
               Padding(
                 padding: const EdgeInsets.only(left: 16, right: 8, top: 8),
                 child: Row(
@@ -101,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // ── Barra de búsqueda + logo ────────────────────────────
+              // ── Barra de búsqueda + logo 
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -155,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 10),
 
-              // ── Banner principal: carrusel AUTOMÁTICO cada 4s ───────
+              // ── Banner principal: carrusel AUTOMÁTICO cada 4s 
               // Le pasamos la lista completa de películas; el widget
               // internamente se encarga de rotarlas solo con un Timer.
               _AutoHeroBanner(
@@ -167,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 16),
 
-              // ── Sección: Géneros populares ──────────────────────────
+              // ── Sección: Géneros populares 
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
@@ -267,11 +267,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ════════════════════════════════════════════════════════════════════
 // BANNER HERO AUTOMÁTICO
 // Carrusel que cambia de película sola cada 4 segundos usando un
 // PageView controlado por un Timer.periodic.
-// ════════════════════════════════════════════════════════════════════
 class _AutoHeroBanner extends StatefulWidget {
   final List<dynamic> movies;
   const _AutoHeroBanner({required this.movies, super.key});
@@ -308,16 +306,13 @@ class _AutoHeroBannerState extends State<_AutoHeroBanner> {
       // de la lista, regresamos a 0 para que el ciclo sea infinito.
       final nextPage = (_currentPage + 1) % widget.movies.length;
 
-      // animateToPage hace la transición visual (deslizamiento) hacia
-      // la siguiente película, en vez de saltar de golpe.
       _pageController.animateToPage(
         nextPage,
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
       );
 
-      // Actualizamos el estado para que el contador interno coincida
-      // con la página que se está mostrando ahora.
+      /
       setState(() => _currentPage = nextPage);
     });
   }
@@ -333,16 +328,13 @@ class _AutoHeroBannerState extends State<_AutoHeroBanner> {
 
   @override
   Widget build(BuildContext context) {
-    // Si todavía no han cargado películas, mostramos el placeholder
-    // rojo fijo (sin animación, porque no hay nada que rotar).
+   
     if (widget.movies.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Container(
-          // Ya no necesitamos 220 de alto: ese tamaño era para que
-          // entrara el póster VERTICAL completo. Ahora usamos el
-          // backdrop (imagen horizontal), que se ve bien en un
-          // banner más bajo, tipo 180.
+          
+         
           height: 180,
           decoration: BoxDecoration(
             color: const Color(0xFFB22222),
@@ -369,17 +361,13 @@ class _AutoHeroBannerState extends State<_AutoHeroBanner> {
                 borderRadius: BorderRadius.circular(16),
               ),
               clipBehavior: Clip.hardEdge,
-              // OJO: usamos movie.backdropPath en vez de
+              // usamos movie.backdropPath en vez de
               // movie.posterPath. El backdrop es la imagen
-              // HORIZONTAL que TMDB da para cada película (pensada
-              // justo para banners anchos como este). El poster es
-              // vertical, por eso se veía cortado/feo con cover.
+              // HORIZONTAL que TMDB da para cada película 
               child: movie != null && movie.backdropPath.isNotEmpty
                   ? Image.network(
                       movie.backdropPath,
-                      // Con el backdrop horizontal, cover ahora SÍ
-                      // llena el contenedor sin recortar partes
-                      // importantes (no hay caras/títulos cortados).
+                      // Con el backdrop horizontal
                       fit: BoxFit.cover,
                       width: double.infinity,
                       height: double.infinity,
@@ -394,7 +382,7 @@ class _AutoHeroBannerState extends State<_AutoHeroBanner> {
   }
 }
 
-// ── Chips de géneros con scroll horizontal ──────────────────────────
+// ── Chips de géneros con scroll horizontal 
 class _GenreChipsRow extends StatelessWidget {
   final List<String> genres = const [
     'Terror',
@@ -445,7 +433,7 @@ class _GenreChip extends StatelessWidget {
   }
 }
 
-// ── Carrusel horizontal con datos reales + difuminado en bordes ────
+//  Carrusel horizontal con datos reales + difuminado en bordes 
 class _MovieCarousel extends StatelessWidget {
   final MovieProvider movieProvider;
   const _MovieCarousel({required this.movieProvider});
@@ -521,7 +509,7 @@ class _MovieCarousel extends StatelessWidget {
   }
 }
 
-// ── Card individual de película (poster real) ──────────────────────
+// ── Card individual de película (poster real) 
 class _MovieCard extends StatelessWidget {
   final dynamic movie;
   const _MovieCard({this.movie});
@@ -538,8 +526,7 @@ class _MovieCard extends StatelessWidget {
       child: movie != null && movie.posterPath.isNotEmpty
           ? Image.network(
               movie.posterPath,
-              // Mismo ajuste aquí: cover recortaba el póster y se
-              // veía desproporcionado dentro de la card pequeña.
+              // Mismo ajuste aquí
               fit: BoxFit.cover,
               alignment: Alignment
                   .topCenter, // prioriza mostrar la cara/título arriba del póster, en vez de recortar por el centro
@@ -550,7 +537,7 @@ class _MovieCard extends StatelessWidget {
   }
 }
 
-// ── Card de opinión con datos reales de la API ──────────────────────
+// ── Card de opinión con datos reales de la API 
 class _ReviewCard extends StatefulWidget {
   final MovieReview movieReview;
   const _ReviewCard({required this.movieReview});
