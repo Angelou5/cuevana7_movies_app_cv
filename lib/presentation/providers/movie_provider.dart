@@ -11,7 +11,14 @@ class MovieReview {
 
 class MovieProvider extends ChangeNotifier {
   final MovieRepositories repository;
+
   List<Movie> movies = [];
+  List<Movie> moviesComedia = [];
+  List<Movie> moviesTerror = [];
+  List<Movie> moviesAccion = [];
+  List<Movie> moviesSuspenso = [];
+  List<Movie> moviesFamilia = []; // Para ver en familia
+
   List<MovieReview> movieReviews = [];
   bool isLoading = false;
   String? error;
@@ -28,6 +35,7 @@ class MovieProvider extends ChangeNotifier {
     try {
       movies = await repository.getNowPlaying();
       await _loadAllReviews();
+      await loadGenreMovies();
     } catch (e) {
       error = e.toString();
       movies = [];
@@ -54,12 +62,27 @@ class MovieProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> loadGenreMovies() async {
+    try {
+      moviesComedia = await repository.getByGenre(35); // Comedia
+      moviesTerror = await repository.getByGenre(27); // Terror
+      moviesAccion = await repository.getByGenre(28); // Acción
+      moviesSuspenso = await repository.getByGenre(53); // Suspenso/Thriller
+      moviesFamilia = await repository.getByGenre(10751); // Familia
+    } catch (e) {
+      debugPrint('Error cargando géneros: $e');
+    }
+    notifyListeners();
+  }
+
   Future<void> _loadAllReviews() async {
     movieReviews = [];
     for (final movie in movies.take(5)) {
       try {
         final reviews = await repository.getMovieReviews(movie.id);
-        debugPrint('Reviews for ${movie.id} (${movie.title}): ${reviews.length}');
+        debugPrint(
+          'Reviews for ${movie.id} (${movie.title}): ${reviews.length}',
+        );
         for (final r in reviews) {
           movieReviews.add(MovieReview(r, movie.title));
         }
