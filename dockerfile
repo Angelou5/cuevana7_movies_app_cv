@@ -12,6 +12,5 @@ RUN git config --global --add safe.directory '*'
 
 RUN flutter pub get 
 
-RUN flutter build apk --release
+CMD ["dart", "run", "lib/start_server.dart"]
 
-CMD ["echo", "Apk en: build/app/outputs/flutter-apk/app-release.apk"]

@@ -5,6 +5,13 @@ import 'package:cuevana7_movies_app_cv/resources/styles/styles.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/app_text_field.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/primary_button.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/or_divider.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/applogo.dart';
+import '../../../implements/datasources/biometric_datasource_impl.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   static const name = 'login-screen';
@@ -21,6 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordCtrl = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+  final biometricService = BiometricDatasourceImpl();
   AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
@@ -30,14 +38,111 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _onLoginPressed() async {
+ void _onLoginPressed() async {
     setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
 
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() => _isLoading = false);
+
+    try {
+
+      // este es el dominio
+      final url = Uri.parse('https://pixonsite.org/signin');
+      
+      // peticion
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': _emailCtrl.text.trim(),
+          'password': _passwordCtrl.text,
+        }),
+      );
+
+      if (!mounted) return;
+
+      // verificar si funciona y nos permite
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final String token = data['token'];
+
+        await context.read<AuthProvider>().setToken(token);
+
+        const storage = FlutterSecureStorage();
+        await storage.write(key: 'saved_email', value: _emailCtrl.text.trim());
+        await storage.write(key: 'saved_password', value: _passwordCtrl.text);
+
+        if (!mounted) return;
+        context.go('/');
+      } else {
+        // Credenciales inválidas 
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Correo o contraseña incorrectos xd')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error de conexión: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _authenticateWithFingerprint() async {
+    final auth = context.read<AuthProvider>();
+
+    if (auth.isAuthenticated) {
+      final ok = await biometricService.authenticate();
+      if (!mounted) return;
+      if (ok) context.go('/');
+      return;
+    }
+
+    const storage = FlutterSecureStorage();
+    final savedEmail = await storage.read(key: 'saved_email');
+    final savedPassword = await storage.read(key: 'saved_password');
+
+    if (savedEmail == null || savedPassword == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Primero inicia sesión con tu correo')),
+      );
+      return;
+    }
+
+    final authenticated = await biometricService.authenticate();
+    if (!mounted) return;
+    if (!authenticated) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final url = Uri.parse('https://pixonsite.org/signin');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': savedEmail, 'password': savedPassword}),
+      );
+      if (!mounted) return;
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        await auth.setToken(data['token']);
+        context.go('/');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sesión expirada, inicia sesión de nuevo')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error de conexión: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -55,7 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const SizedBox(height: 40),
 
-                Center(child: _Logo()),
+                Center(child: AppLogo(logoSize: 62)),
 
                 const SizedBox(height: 24),
 
@@ -68,12 +173,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   hint: 'Correo electrónico',
                   keyboardType: TextInputType.emailAddress,
                   validator: (v) {
-                    if (v == null || v.isEmpty)
+                    if (v == null || v.isEmpty) {
                       return 'El correo es obligatorio';
-                    if (!v.contains('@'))
+                    }
+                    if (!v.contains('@')) {
                       return 'Escribe un correo válido, falta el @';
-                    if (!v.contains('.'))
+                    }
+                    if (!v.contains('.')) {
                       return 'Escribe un correo válido, falta el dominio';
+                    }
                     return null;
                   },
                 ),
@@ -85,10 +193,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   hint: 'Contraseña',
                   obscureText: _obscurePassword,
                   validator: (v) {
-                    if (v == null || v.isEmpty)
+                    if (v == null || v.isEmpty) {
                       return 'La contraseña es obligatoria';
-                    if (v.length < 6)
+                    }
+                    if (v.length < 6) {
                       return 'La contraseña debe tener al menos 6 caracteres';
+                    }
                     return null;
                   },
                   suffixIcon: IconButton(
@@ -142,7 +252,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 Center(
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: _authenticateWithFingerprint,//dedo
                     child: Container(
                       width: 80,
                       height: 80,
@@ -163,29 +273,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _Logo extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        children: [
-          Image.asset('assets/images/logo.png', width: 62, height: 62),
-          const SizedBox(height: 8),
-          const Text(
-            'Cuevana 7',
-            style: TextStyle(
-              fontFamily: 'InclusiveSans',
-              fontSize: 24,
-              fontWeight: FontWeight.w500,
-              color: AppColors.dark,
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -1,9 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:cuevana7_movies_app_cv/theme/app_theme.dart';
 import 'package:cuevana7_movies_app_cv/config/router/app_router.dart';
+import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart';
+import 'package:cuevana7_movies_app_cv/presentation/providers/movie_provider.dart';
+import 'package:cuevana7_movies_app_cv/implements/datasources/movie_db_datasource.dart';
+import 'package:cuevana7_movies_app_cv/implements/repository/movies_repository_impl.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
-  runApp(const MainApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await dotenv.load(fileName: ".env");
+  print('TOKEN loaded: ${dotenv.env['ACCESS_TOKEN']?.isNotEmpty}');
+  print("Token ${dotenv.env["ACCESS_TOKEN"]}");
+
+  final datasource = MovieDbDatasource();
+  final repository = MovieRepositoryImpl(datasource);
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => MovieProvider(repository)),
+      ],
+      child: const MainApp(),
+    ),
+  );
 }
 
 class MainApp extends StatelessWidget {
@@ -15,6 +38,7 @@ class MainApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routerConfig: appRouter,
       theme: AppTheme().getTheme(),
+      title: "Cuevanita",
     );
   }
 }

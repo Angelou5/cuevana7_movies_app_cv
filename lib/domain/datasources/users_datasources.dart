@@ -3,7 +3,9 @@ import 'package:cuevana7_movies_app_cv/domain/entities/user.dart';
 abstract class UsersDataSource {
   Future<User> getUser(String userId);
 
-  Future<void> saveUser(User user);
+  Future<User> saveUser(String name, String email, String password);
+
+  Future<User?> findByEmail(String email); 
 
  /* Future<User> login(String email, String password);
 
