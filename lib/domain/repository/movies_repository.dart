@@ -6,5 +6,6 @@ import 'package:cuevana7_movies_app_cv/domain/entities/review.dart';
 abstract class MovieRepositories {
   Future<List<Movie>> getNowPlaying({int page = 1});
   Future<List<Review>> getMovieReviews(int movieId);
+  Future<List<Movie>> searchMovies(String query);
   Future<List<Movie>> getByGenre(int genreId, {int page = 1});
 }
