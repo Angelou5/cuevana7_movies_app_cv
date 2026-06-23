@@ -77,15 +77,18 @@ class MovieProvider extends ChangeNotifier {
 
   Future<void> _loadAllReviews() async {
     movieReviews = [];
-    for (final movie in movies.take(5)) {
+    for (final movie in movies.take(20)) {
       try {
         final reviews = await repository.getMovieReviews(movie.id);
         debugPrint(
           'Reviews for ${movie.id} (${movie.title}): ${reviews.length}',
         );
         for (final r in reviews) {
-          movieReviews.add(MovieReview(r, movie.title));
+          if(r.content.length < 1000){
+            movieReviews.add(MovieReview(r, movie.title));
+            }
         }
+        
       } catch (e) {
         debugPrint('Error loading reviews for ${movie.id}: $e');
       }

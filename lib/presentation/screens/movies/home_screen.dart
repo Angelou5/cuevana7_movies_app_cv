@@ -145,9 +145,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     // ── CARRUSEL ANCHO (featured) ────────────────────────────
                     const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      child: 
+                     const Text(
+                            'Próximos estrenos',
+                            style: TextStyle(
+                              color: AppColors.dark,
+                              fontSize: 18,
+                              fontFamily: 'InclusiveSans',
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),),
                     SizedBox(
                       height: 220,
+                      
                       child:
+                          
                           movieProvider.isLoading &&
                               movieProvider.movies.isEmpty
                           ? const Center(child: CircularProgressIndicator())
@@ -162,7 +176,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               itemBuilder: (context, index) =>
                                   _WideMovieCard(movie: _filteredMovies[index]),
                             ),
+                      
                     ),
+                    
+                    
 
                     // ── Novedades ────────────────────────────────────────────
                     const SizedBox(height: 24),
@@ -184,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             onTap: () =>
                                 context.read<MovieProvider>().loadNextPage(),
                             child: const Text(
-                              'Ver más',
+                              '',
                               style: TextStyle(
                                 color: AppColors.hint,
                                 fontSize: 13,
@@ -340,7 +357,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             )
                           : Column(
-                              children: movieProvider.movieReviews.take(4).map((
+                              children: movieProvider.movieReviews.take(10).map((
                                 mr,
                               ) {
                                 return Padding(
