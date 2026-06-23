@@ -101,4 +101,25 @@ class MovieDbDatasource implements MovieDatasources {
         .map((j) => MovieMapper.fromJson(j))
         .toList();
   }
+
+  @override
+  Future<List<Movie>> searchMovies(String query) async {
+    final url = Uri.parse(
+      '$_baseUrl/search/movie?query=${Uri.encodeComponent(query)}&language=es-MX&page=1',
+    );
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $_token',
+        'accept': 'application/json',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Error al buscar: ${response.statusCode}');
+    }
+    final data = jsonDecode(response.body);
+    return (data['results'] as List)
+        .map((j) => MovieMapper.fromJson(j))
+        .toList();
+  }
 }
