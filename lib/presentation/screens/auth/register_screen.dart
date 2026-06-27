@@ -179,9 +179,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     if (v == null || v.isEmpty) {
                       return 'La contraseña es obligatoria';
                     }
-                    if (v.length < 6) {
-                      return 'La contraseña debe tener al menos 6 caracteres';
+                    if (v.length < 8) {
+                      return 'La contraseña debe tener al menos 8 caracteres';
                     }
+                    if (!RegExp(r'[A-Z]').hasMatch(v)) {
+                      return 'Debe tener una mayúscula';
+                    }
+                    if (!RegExp(r'[a-z]').hasMatch(v)) {
+                      return 'Debe tener una minúscula';
+                    }
+                    if (!RegExp(r'\d').hasMatch(v)) {
+                      return 'Debe tener un número';
+                    }
+                    if (!RegExp(r'[-!@#$%^&*(),.?":{}|<>_]').hasMatch(v)) {
+                      return 'Debe tener un carácter especial';
+                    }
+
                     return null;
                   },
                   suffixIcon: IconButton(
