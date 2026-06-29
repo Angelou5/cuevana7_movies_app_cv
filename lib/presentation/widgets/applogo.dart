@@ -27,7 +27,7 @@ class AppLogo extends StatelessWidget {
         ),
         SizedBox(height: size.height * 0.02),
         Text(
-          'Cuevana 7',
+          'Cuevanita',
           style: TextStyle(
             fontFamily: 'InclusiveSans',
             fontSize: resolvedSize * 0.4,

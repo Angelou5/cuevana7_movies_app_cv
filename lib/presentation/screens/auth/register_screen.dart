@@ -4,7 +4,6 @@ import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 import 'package:cuevana7_movies_app_cv/resources/styles/styles.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/app_text_field.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/primary_button.dart';
-import 'package:cuevana7_movies_app_cv/presentation/widgets/account_divider.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -40,19 +39,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
- void _onRegisterPressed() async {
+  void _onRegisterPressed() async {
     setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
-
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isLoading = true);
-
     try {
       final url = Uri.parse('https://pixonsite.org/signup');
-      
-      // Juntamos el nombre y apellido para el backend xd
       final fullName = '${_nameCtrl.text.trim()} ${_lastNameCtrl.text.trim()}';
-
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -62,18 +55,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'password': _passwordCtrl.text,
         }),
       );
-
       if (!mounted) return;
-
-      // revisamos el codigo 201 que es de crear
       if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Usuario registrado con éxito')),
         );
-      
         context.go('/login');
       } else {
-        // El correo ya existe o faltan datos
         final data = jsonDecode(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data['error'] ?? 'Error al registrar xd')),
@@ -81,9 +69,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error de conexión: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error de conexión: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -92,170 +80,176 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Form(
-            key: _formKey,
-            autovalidateMode: _autovalidateMode,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 32),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            stops: [0.53, 1.0],
+            colors: [AppColors.background, AppColors.dark],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Form(
+              key: _formKey,
+              autovalidateMode: _autovalidateMode,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 32),
 
-                GestureDetector(
-                  onTap: () => context.pop(),
-                  child: const Icon(
-                    Icons.arrow_back_ios,
-                    color: AppColors.dark,
-                    size: 22,
+                  // fila con flecha atrás + título centrado
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: GestureDetector(
+                          onTap: () => context.pop(),
+                          child: const Icon(
+                            Icons.arrow_back_ios,
+                            color: AppColors.white,
+                            size: 26,
+                          ),
+                        ),
+                      ),
+                      const Text('Registro', style: AppStyles.title),
+                    ],
                   ),
-                ),
 
-                const SizedBox(height: 16),
+                  const SizedBox(height: 32),
 
-                const Text('Registro de usuario', style: AppStyles.title),
+                  // Nombre
+                  AppTextField(
+                    controller: _nameCtrl,
+                    hint: 'Nombre',
+                    validator: (v) {
+                      if (v == null || v.isEmpty)
+                        return 'El nombre es obligatorio';
+                      if (v.trim().length < 2)
+                        return 'El nombre debe tener al menos 2 caracteres';
+                      return null;
+                    },
+                  ),
 
-                const SizedBox(height: 32),
+                  const SizedBox(height: 16),
 
-                AppTextField(
-                  controller: _nameCtrl,
-                  hint: 'Nombre',
-                  validator: (v) {
-                    if (v == null || v.isEmpty) {
-                      return 'El nombre es obligatorio';
-                    }
-                    if (v.trim().length < 2) {
-                      return 'El nombre debe tener al menos 2 caracteres';
-                    }
-                    return null;
-                  },
-                ),
+                  // Apellido
+                  AppTextField(
+                    controller: _lastNameCtrl,
+                    hint: 'Apellido',
+                    validator: (v) {
+                      if (v == null || v.isEmpty)
+                        return 'El apellido es obligatorio';
+                      if (v.trim().length < 2)
+                        return 'El apellido debe tener al menos 2 caracteres';
+                      return null;
+                    },
+                  ),
 
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                AppTextField(
-                  controller: _lastNameCtrl,
-                  hint: 'Apellido',
-                  validator: (v) {
-                    if (v == null || v.isEmpty) {
-                      return 'El apellido es obligatorio';
-                    }
-                    if (v.trim().length < 2) {
-                      return 'El apellido debe tener al menos 2 caracteres';
-                    }
-                    return null;
-                  },
-                ),
+                  // Correo
+                  AppTextField(
+                    controller: _emailCtrl,
+                    hint: 'Correo Electrónico',
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (v) {
+                      if (v == null || v.isEmpty)
+                        return 'El correo es obligatorio';
+                      if (!v.contains('@'))
+                        return 'Escribe un correo válido, falta el @';
+                      if (!v.contains('.'))
+                        return 'Escribe un correo válido, falta el dominio';
+                      return null;
+                    },
+                  ),
 
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                AppTextField(
-                  controller: _emailCtrl,
-                  hint: 'Correo electrónico',
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (v) {
-                    if (v == null || v.isEmpty) {
-                      return 'El correo es obligatorio';
-                    }
-                    if (!v.contains('@')) {
-                      return 'Escribe un correo válido, falta el @';
-                    }
-                    if (!v.contains('.')) {
-                      return 'Escribe un correo válido, falta el dominio';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 16),
-
-                AppTextField(
-                  controller: _passwordCtrl,
-                  hint: 'Contraseña',
-                  obscureText: _obscurePassword,
-                  validator: (v) {
-                    if (v == null || v.isEmpty) {
-                      return 'La contraseña es obligatoria';
-                    }
-                    if (v.length < 8) {
-                      return 'La contraseña debe tener al menos 8 caracteres';
-                    }
-                    if (!RegExp(r'[A-Z]').hasMatch(v)) {
-                      return 'Debe tener una mayúscula';
-                    }
-                    if (!RegExp(r'[a-z]').hasMatch(v)) {
-                      return 'Debe tener una minúscula';
-                    }
-                    if (!RegExp(r'\d').hasMatch(v)) {
-                      return 'Debe tener un número';
-                    }
-                    if (!RegExp(r'[-!@#$%^&*(),.?":{}|<>_]').hasMatch(v)) {
-                      return 'Debe tener un carácter especial';
-                    }
-
-                    return null;
-                  },
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      color: AppColors.hint,
+                  // Contraseña
+                  AppTextField(
+                    controller: _passwordCtrl,
+                    hint: 'Contraseña',
+                    obscureText: _obscurePassword,
+                    validator: (v) {
+                      if (v == null || v.isEmpty)
+                        return 'La contraseña es obligatoria';
+                      if (v.length < 8)
+                        return 'La contraseña debe tener al menos 8 caracteres';
+                      if (!RegExp(r'[A-Z]').hasMatch(v))
+                        return 'Debe tener una mayúscula';
+                      if (!RegExp(r'[a-z]').hasMatch(v))
+                        return 'Debe tener una minúscula';
+                      if (!RegExp(r'\d').hasMatch(v))
+                        return 'Debe tener un número';
+                      if (!RegExp(r'[-!@#$%^&*(),.?":{}|<>_]').hasMatch(v))
+                        return 'Debe tener un carácter especial';
+                      return null;
+                    },
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: AppColors.hint,
+                      ),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     ),
-                    onPressed: () =>
-                        setState(() => _obscurePassword = !_obscurePassword),
                   ),
-                ),
 
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                AppTextField(
-                  controller: _confirmPasswordCtrl,
-                  hint: 'Confirmar contraseña',
-                  obscureText: _obscureConfirm,
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Confirma tu contraseña';
-                    if (v != _passwordCtrl.text) {
-                      return 'Las contraseñas no coinciden';
-                    }
-                    return null;
-                  },
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureConfirm
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      color: AppColors.hint,
+                  // Confirmar contraseña
+                  AppTextField(
+                    controller: _confirmPasswordCtrl,
+                    hint: 'Confirmar Contraseña',
+                    obscureText: _obscureConfirm,
+                    validator: (v) {
+                      if (v == null || v.isEmpty)
+                        return 'Confirma tu contraseña';
+                      if (v != _passwordCtrl.text)
+                        return 'Las contraseñas no coinciden';
+                      return null;
+                    },
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureConfirm
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: AppColors.hint,
+                      ),
+                      onPressed: () =>
+                          setState(() => _obscureConfirm = !_obscureConfirm),
                     ),
-                    onPressed: () =>
-                        setState(() => _obscureConfirm = !_obscureConfirm),
                   ),
-                ),
 
-                const SizedBox(height: 36),
+                  const SizedBox(height: 36),
 
-                PrimaryButton(
-                  label: 'Registrarse',
-                  isLoading: _isLoading,
-                  onPressed: _isLoading ? null : _onRegisterPressed,
-                ),
+                  // Botón iniciar sesión
+                  PrimaryButton(
+                    label: 'Iniciar sesión',
+                    isLoading: false,
+                    onPressed: () => context.go('/login'),
+                  ),
 
-                const SizedBox(height: 24),
+                  const SizedBox(height: 16),
 
-                const AccountDivider(),
+                  // Botón registrarse
+                  PrimaryButton(
+                    label: 'Registrarse',
+                    isLoading: _isLoading,
+                    onPressed: _isLoading ? null : _onRegisterPressed,
+                  ),
 
-                const SizedBox(height: 24),
-
-                PrimaryButton(
-                  label: 'Iniciar sesión',
-                  isLoading: false,
-                  onPressed: () => context.go('/login'),
-                ),
-
-                const SizedBox(height: 48),
-              ],
+                  const SizedBox(height: 48),
+                ],
+              ),
             ),
           ),
         ),

@@ -1,15 +1,29 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  AppColors._(); // no instanciar
+  AppColors._();
 
-  static const Color background = Color.fromARGB(255, 255, 255, 255);
-  static const Color dark = Color(0xFF1B1B1B);
-  static const Color white = Color.fromARGB(255, 255, 255, 255);
-  static const Color inputFill = Color(0xFFD9D9D9);
-  static const Color hint = Color(0xFF6B6B6B);
-  static const Color buttonText = Color(0xFFE5E5E5);
-  static const Color primary = Color.fromARGB(255, 0, 0, 0);
-  static const Color divider = Colors.black;
-  static const Color error = Color.fromARGB(255, 255, 0, 0);
+  // Fondos
+  static const Color background = Color(
+    0xFF1D1C1B,
+  ); // antes blanco, ahora fondo superior
+  static const Color dark = Color(
+    0xFF07163B,
+  ); // antes negro, ahora fondo inferior
+  static const Color inputFill = Color(0xFF282828); // fondo de los campos
+  static const Color primary = Color(0xFF091738); // botón degradado abajo
+  static const Color buttonText = Color(
+    0x641940E9,
+  ); // botón degradado arriba (39% opacidad)
+  static const Color profileCircle = Color(0xFF0B1735); // fondo círculo perfil
+
+  // Textos
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color hint = Color(0x73FFFFFF); // blanco 45% opacidad
+  static const Color divider = Color(
+    0xFF6B6B6B,
+  ); // gris para textos secundarios y bordes
+
+  // Conservados
+  static const Color error = Color(0xFFFF0000);
 }
