@@ -34,17 +34,23 @@ class MovieProvider extends ChangeNotifier {
   // 👈 llamar desde onChanged del TextField
   void onSearchChanged(String query) {
     _debounce?.cancel();
-    if (query.trim().isEmpty) {
+
+    // Limpiar espacios en blanco al inicio y al final de la consulta
+    final cleanQuery = query.trim();
+
+    if (cleanQuery.isEmpty || cleanQuery.length < 3) {
       searchResults = [];
       isSearching = false;
       notifyListeners();
       return;
     }
+
     isSearching = true;
     notifyListeners();
+
     _debounce = Timer(const Duration(milliseconds: 400), () async {
       try {
-        searchResults = await repository.searchMovies(query.trim());
+        searchResults = await repository.searchMovies(cleanQuery);
       } catch (_) {
         searchResults = [];
       }
