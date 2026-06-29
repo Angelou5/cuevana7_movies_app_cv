@@ -20,9 +20,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
-  bool _isNavBarVisible = true;
-  double _lastScrollOffset = 0;
   String _searchQuery = '';
 
   // [TAREA: Menú desplegable de perfil] — controla visibilidad del dropdown
@@ -31,28 +28,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
     Future.microtask(() {
       context.read<MovieProvider>().loadNowPlaying();
     });
   }
-
-  void _onScroll() {
-    final current = _scrollController.offset;
-    const threshold = 10.0;
-    if (current > _lastScrollOffset + threshold && _isNavBarVisible) {
-      setState(() => _isNavBarVisible = false);
-    } else if (current < _lastScrollOffset - threshold && !_isNavBarVisible) {
-      setState(() => _isNavBarVisible = true);
-    }
-    _lastScrollOffset = current;
-  }
-
   @override
   void dispose() {
     _searchController.dispose();
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -188,97 +170,87 @@ class _HomeScreenState extends State<HomeScreen> {
             child: SafeArea(
               child: Column(
                 children: [
+                  // ── Buscador + Avatar ────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 24,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 64,
+                            decoration: BoxDecoration(
+                              color: AppColors.inputFill,
+                              borderRadius: BorderRadius.circular(45),
+                            ),
+                            child: TextField(
+                              controller: _searchController,
+                              style: const TextStyle(
+                                color: AppColors.white,
+                                fontSize: 16,
+                                fontFamily: 'InclusiveSans',
+                              ),
+                              decoration: const InputDecoration(
+                                hintText: 'Buscar',
+                                hintStyle: TextStyle(
+                                  color: AppColors.hint,
+                                  fontSize: 24,
+                                  fontFamily: 'InclusiveSans',
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  color: AppColors.hint,
+                                  size: 22,
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 20,
+                                ),
+                              ),
+                              onChanged: (value) {
+                                setState(() {
+                                  _searchQuery = value.toLowerCase();
+                                });
+                                context
+                                    .read<MovieProvider>()
+                                    .onSearchChanged(value);
+                              },
+                              onTapOutside: (_) {
+                                FocusScope.of(context).unfocus();
+                              },
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // [TAREA: Menú desplegable de perfil] — avatar que abre el dropdown
+                        GestureDetector(
+                          onTap: () => setState(
+                            () => _showProfileMenu = !_showProfileMenu,
+                          ),
+                          child: Container(
+                            width: 52,
+                            height: 52,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF8E8E93),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: 30,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   Expanded(
                     child: SingleChildScrollView(
-                      controller: _scrollController,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // ── Buscador + Avatar ────────────────────────
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 24,
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    height: 64,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.inputFill,
-                                      borderRadius: BorderRadius.circular(45),
-                                    ),
-                                    child: TextField(
-                                      controller: _searchController,
-                                      style: const TextStyle(
-                                        color: AppColors.white,
-                                        fontSize: 16,
-                                        fontFamily: 'InclusiveSans',
-                                      ),
-                                      decoration: const InputDecoration(
-                                        hintText: 'Buscar',
-                                        hintStyle: TextStyle(
-                                          color: AppColors.hint,
-                                          fontSize: 24,
-                                          fontFamily: 'InclusiveSans',
-                                        ),
-                                        prefixIcon: Icon(
-                                          Icons.search,
-                                          color: AppColors.hint,
-                                          size: 22,
-                                        ),
-                                        border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          vertical: 20,
-                                        ),
-                                      ),
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _searchQuery = value.toLowerCase();
-                                          if (value.isNotEmpty) {
-                                            _isNavBarVisible = true;
-                                          }
-                                        });
-                                        context
-                                            .read<MovieProvider>()
-                                            .onSearchChanged(value);
-                                      },
-                                      onTapOutside: (_) {
-                                        FocusScope.of(context).unfocus();
-                                        _searchController.clear();
-                                        setState(() => _searchQuery = '');
-                                        context
-                                            .read<MovieProvider>()
-                                            .clearSearch();
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                // [TAREA: Menú desplegable de perfil] — avatar que abre el dropdown
-                                GestureDetector(
-                                  onTap: () => setState(
-                                    () => _showProfileMenu = !_showProfileMenu,
-                                  ),
-                                  child: Container(
-                                    width: 52,
-                                    height: 52,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF8E8E93),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.person,
-                                      color: Colors.white,
-                                      size: 30,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
                           // ── Resultados de búsqueda ───────────────────
                           if (_searchQuery.isNotEmpty) ...[
                             const SizedBox(height: 8),
@@ -571,7 +543,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   // ── Navbar flotante compartida ───────────────────────
                   BottomNavBar(
                     activeTab: NavTab.home,
-                    isVisible: _isNavBarVisible,
+                    isVisible: true,
                   ),
                 ],
               ),
