@@ -35,27 +35,27 @@ class AppTextField extends StatelessWidget {
         fillColor: AppColors.inputFill,
         suffixIcon: suffixIcon,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
+          horizontal: 24,
           vertical: 20,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(45), // píldora como Figma
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(45),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.dark, width: 1.5),
+          borderRadius: BorderRadius.circular(45),
+          borderSide: const BorderSide(color: AppColors.white, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(45),
           borderSide: const BorderSide(color: AppColors.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(45),
           borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
       ),
