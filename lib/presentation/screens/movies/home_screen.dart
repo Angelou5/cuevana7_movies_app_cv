@@ -736,10 +736,33 @@ class _FadedGenreSection extends StatelessWidget {
               : ListView.separated(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   scrollDirection: Axis.horizontal,
-                  itemCount: movies.length,
+                  
+                  // 1. Agregamos el +1 para hacerle espacio a la flecha
+                  itemCount: movies.length + 1, 
+                  
                   separatorBuilder: (_, __) => const SizedBox(width: 10),
-                  itemBuilder: (context, index) =>
-                      MovieCard(movie: movies[index]),
+                  
+                  // 2. Expandimos el itemBuilder con la condición
+                  itemBuilder: (context, index) {
+                    if (index == movies.length) {
+                      return Center(
+                        child: GestureDetector(
+                          onTap: () {
+                            // Aquí puedes manejar la lógica en el futuro para cargar más películas de este género
+                            debugPrint('Cargar más películas de $title'); 
+                          },
+                          child: const Icon(
+                            Icons.chevron_right,
+                            color: AppColors.hint,
+                            size: 22,
+                          ),
+                        ),
+                      );
+                    }
+                    
+                    // Si no es el último índice, dibuja la película normal
+                    return MovieCard(movie: movies[index]);
+                  },
                 ),
         ),
       ],

@@ -102,7 +102,13 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                         ),
                       ],
                     ),
+                    
                   ),
+                  const SizedBox(height: 24),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 24),
+                                child: Text('Guardados'),
+                              ),
                   Expanded(
                     child: BottomFadeMask(
                       child: SingleChildScrollView(
@@ -116,6 +122,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                       ),
                     ),
                   ),
+                  
                 ],
               ),
             ),
@@ -205,6 +212,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
             child: SafeArea(
               top: false,
               child: BottomNavBar(activeTab: NavTab.favorites, isVisible: true),
+              
             ),
           ),
         ],
