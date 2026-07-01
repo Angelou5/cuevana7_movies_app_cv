@@ -71,6 +71,7 @@ class _LikedScreenState extends State<LikedScreen> {
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
                       vertical: 24,
+                      
                     ),
                     child: Row(
                       children: [
@@ -103,6 +104,11 @@ class _LikedScreenState extends State<LikedScreen> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 24),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 24),
+                                child: Text('Favoritos'),
+                              ),
                   Expanded(
                     child: BottomFadeMask(
                       child: SingleChildScrollView(
@@ -116,8 +122,10 @@ class _LikedScreenState extends State<LikedScreen> {
                       ),
                     ),
                   ),
+                  
                 ],
               ),
+              
             ),
           ),
 
