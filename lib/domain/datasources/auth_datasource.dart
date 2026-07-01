@@ -14,6 +14,9 @@ abstract class AuthDatasource {
     required String name,
   });
 
+  //inicio de sesión con Google
+  Future<UserEntity?> loginWithGoogle();
+
   /// Cierra la sesión del usuario actual.
   Future<void> logout();
 }

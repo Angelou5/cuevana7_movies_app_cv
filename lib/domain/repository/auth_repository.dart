@@ -11,5 +11,7 @@ abstract class AuthRepository {
     required String name,
   });
 
+  Future<UserEntity?> loginWithGoogle();
+  
   Future<void> logout();
 }
