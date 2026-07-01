@@ -12,18 +12,9 @@ class MovieRepositoryImpl implements MovieRepositories {
     return datasource.getNowPlaying(page: page);
   }
 
-  @override
+   @override
   Future<List<Review>> getMovieReviews(int movieId) {
     return datasource.getMovieReviews(movieId);
   }
 
-  @override
-  Future<List<Movie>> getByGenre(int genreId, {int page = 1}) {
-    return datasource.getByGenre(genreId, page: page);
-  }
-
-  @override
-  Future<List<Movie>> searchMovies(String query) {
-    return datasource.searchMovies(query);
-  }
 }

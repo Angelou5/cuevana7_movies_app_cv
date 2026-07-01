@@ -7,9 +7,7 @@ class MovieMapper {
   static Movie fromJson(Map<String, dynamic> json) {
     return Movie(
       id: json['id'] ?? 0,
-      title: (json['title'] != null && json['title'].toString().isNotEmpty)
-          ? json['title']
-          : (json['original_title'] ?? 'Sin título'),
+      title: json['title'] ?? 'Sin título',
       overview: json['overview'] ?? 'Sin descripción',
       posterPath: json['poster_path'] != null
           ? '$_posterBase${json['poster_path']}'
@@ -19,9 +17,7 @@ class MovieMapper {
           : '',
       voteAverage: (json['vote_average'] ?? 0).toDouble(),
       voteCount: json['vote_count'] ?? 0,
-      releaseDate:
-          json['release_date'] != null &&
-              json['release_date'].toString().isNotEmpty
+      releaseDate: json['release_date'] != null && json['release_date'].toString().isNotEmpty
           ? DateTime.parse(json['release_date'])
           : DateTime(2000),
       adult: json['adult'] ?? false,
@@ -29,8 +25,7 @@ class MovieMapper {
       popularity: (json['popularity'] ?? 0).toDouble(),
       originalLanguage: json['original_language'] ?? '',
       originalTitle: json['original_title'] ?? '',
-      genreIds:
-          (json['genre_ids'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      genreIds: (json['genre_ids'] as List?)?.map((e) => e.toString()).toList() ?? [],
     );
   }
 }

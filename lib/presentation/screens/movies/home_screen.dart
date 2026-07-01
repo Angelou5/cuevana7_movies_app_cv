@@ -19,11 +19,16 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+<<<<<<< HEAD
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
   // [TAREA: Menú desplegable de perfil] — controla visibilidad del dropdown
   bool _showProfileMenu = false;
+=======
+  final _movieDbDatasource = MovieDbDatasource();
+  List<Movie> _familyMovies = [];
+>>>>>>> a0b82e6266a8196b782ef9360c00194ab10409c6
 
   @override
   void initState() {
@@ -33,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
   @override
+<<<<<<< HEAD
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -152,6 +158,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
 >>>>>>> fb411c076ef30900fea8644d52732bcc88449d84
   @override
+=======
+>>>>>>> a0b82e6266a8196b782ef9360c00194ab10409c6
   Widget build(BuildContext context) {
     final movieProvider = context.watch<MovieProvider>();
 
@@ -166,6 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+<<<<<<< HEAD
                     // ── Header ─────────────────────────────────────────
                     Padding(
                       padding: const EdgeInsets.only(left: 16, top: 8),
@@ -656,6 +665,28 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 24),
                     ],
+=======
+                    const Text(
+                      'Home',
+                      style: TextStyle(
+                        color: AppColors.hint,
+                        fontSize: 15,
+                        fontFamily: 'InclusiveSans',
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.logout,
+                        color: AppColors.hint,
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        context.read<AuthProvider>().logout();
+                        context.go('/login');
+                      },
+                    ),
+>>>>>>> a0b82e6266a8196b782ef9360c00194ab10409c6
                   ],
 =======
                         ),
@@ -1073,6 +1104,7 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
             // ── Bottom Nav ────────────────────────────────────────────
             Container(
               decoration: const BoxDecoration(
@@ -1084,6 +1116,178 @@ class _HomeScreenState extends State<HomeScreen> {
 // en ambos lados del carrusel. El título queda fuera del ShaderMask.
 class _FadedGenreSection extends StatelessWidget {
   final String title;
+=======
+              // ── Barra de búsqueda + logo 
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: AppColors.inputFill,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const TextField(
+                          style: TextStyle(
+                            color: AppColors.dark,
+                            fontSize: 16,
+                            fontFamily: 'InclusiveSans',
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Buscar',
+                            hintStyle: TextStyle(
+                              color: AppColors.hint,
+                              fontFamily: 'InclusiveSans',
+                            ),
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                            prefixIcon: Padding(
+                              padding: EdgeInsets.only(left: 6),
+                              child: Icon(Icons.search, color: AppColors.hint, size: 20),
+                            ),
+                            prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Hero(
+                      tag: 'app-logo',
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        width: 36,
+                        height: 36,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // ── Banner principal: carrusel AUTOMÁTICO cada 4s 
+              // Le pasamos la lista completa de películas; el widget
+              // internamente se encarga de rotarlas solo con un Timer.
+              _AutoHeroBanner(
+                movies: movieProvider.movies,
+                // key distinta para que Flutter no confunda este timer
+                // con el de "Para ver en familia" de más abajo
+                key: const ValueKey('hero-novedades'),
+              ),
+
+              const SizedBox(height: 16),
+
+              // ── Sección: Géneros populares 
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Géneros populares',
+                  style: TextStyle(
+                    color: AppColors.dark,
+                    fontSize: 16,
+                    fontFamily: 'InclusiveSans',
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              _GenreChipsRow(),
+
+              const SizedBox(height: 20),
+
+              // ── Sección: Novedades (carrusel real desde la API) ─────
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Novedades',
+                  style: TextStyle(
+                    color: AppColors.dark,
+                    fontSize: 16,
+                    fontFamily: 'InclusiveSans',
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              _MovieCarousel(movieProvider: movieProvider),
+
+              const SizedBox(height: 20),
+
+              // ── Sección: Para ver en familia (carrusel automático) ──
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Para ver en familia',
+                  style: TextStyle(
+                    color: AppColors.dark,
+                    fontSize: 16,
+                    fontFamily: 'InclusiveSans',
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              _AutoHeroBanner(
+                movies: _familyMovies,
+                key: const ValueKey('hero-familia'),
+              ),
+
+              const SizedBox(height: 20),
+
+              // ── Sección: Opiniones (reviews reales desde la API) ────
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Opiniones',
+                  style: TextStyle(
+                    color: AppColors.dark,
+                    fontSize: 16,
+                    fontFamily: 'InclusiveSans',
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: movieProvider.movieReviews.isEmpty
+                    ? const Text(
+                        'No hay opiniones disponibles',
+                        style: TextStyle(
+                          color: AppColors.hint,
+                          fontFamily: 'InclusiveSans',
+                        ),
+                      )
+                    : Column(
+                        children: movieProvider.movieReviews.take(3).map((mr) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: _ReviewCard(movieReview: mr),
+                          );
+                        }).toList(),
+                      ),
+              ),
+
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// BANNER HERO AUTOMÁTICO
+// Carrusel que cambia de película sola cada 4 segundos usando un
+// PageView controlado por un Timer.periodic.
+class _AutoHeroBanner extends StatefulWidget {
+>>>>>>> a0b82e6266a8196b782ef9360c00194ab10409c6
   final List<dynamic> movies;
   const _FadedGenreSection({required this.title, required this.movies});
 
@@ -1208,6 +1412,7 @@ class _ProfileMenuItem extends StatelessWidget {
 }
 <<<<<<< HEAD
 
+<<<<<<< HEAD
 // ── _WideMovieCard ─────────────────────────────────────────────────────────────
 class _WideMovieCard extends StatefulWidget {
   final dynamic movie;
@@ -1219,187 +1424,140 @@ class _WideMovieCard extends StatefulWidget {
 
 class _WideMovieCardState extends State<_WideMovieCard> {
   bool _showDescription = false;
+=======
+// ── Chips de géneros con scroll horizontal 
+class _GenreChipsRow extends StatelessWidget {
+  final List<String> genres = const [
+    'Terror',
+    'Comedia',
+    'Suspenso',
+    'Romance',
+    'Acción',
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width - 48;
-    final movie = widget.movie;
-
-    return GestureDetector(
-      onTap: () {
-        if (_showDescription) setState(() => _showDescription = false);
-      },
-      child: Container(
-        width: width,
-        decoration: BoxDecoration(
-          color: AppColors.inputFill,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        clipBehavior: Clip.hardEdge,
-        child: movie == null
-            ? null
-            : Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (movie.backdropPath.isNotEmpty)
-                    Image.network(
-                      movie.backdropPath,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const SizedBox(),
-                    ),
-                  AnimatedOpacity(
-                    duration: const Duration(milliseconds: 250),
-                    opacity: _showDescription ? 1.0 : 0.0,
-                    child: Container(color: Colors.black.withOpacity(0.75)),
-                  ),
-                  AnimatedOpacity(
-                    duration: const Duration(milliseconds: 250),
-                    opacity: _showDescription ? 1.0 : 0.0,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            movie.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontFamily: 'InclusiveSans',
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            movie.overview.isNotEmpty
-                                ? movie.overview
-                                : 'Sin descripción disponible.',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontFamily: 'InclusiveSans',
-                              height: 1.5,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          GestureDetector(
-                            onTap: () =>
-                                setState(() => _showDescription = false),
-                            child: Text(
-                              'Cerrar',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.70),
-                                fontSize: 12,
-                                fontFamily: 'InclusiveSans',
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  AnimatedOpacity(
-                    duration: const Duration(milliseconds: 250),
-                    opacity: _showDescription ? 0.0 : 1.0,
-                    child: Positioned.fill(
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [
-                                Colors.black.withOpacity(0.88),
-                                Colors.transparent,
-                              ],
-                            ),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      movie.title,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontFamily: 'InclusiveSans',
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    if (movie.overview.isNotEmpty)
-                                      Text(
-                                        movie.overview,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color: Colors.white.withOpacity(0.80),
-                                          fontSize: 11,
-                                          fontFamily: 'InclusiveSans',
-                                          height: 1.4,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              GestureDetector(
-                                onTap: () =>
-                                    setState(() => _showDescription = true),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.18),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: Colors.white.withOpacity(0.55),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'Ver más',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontFamily: 'InclusiveSans',
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: genres.map((g) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: _GenreChip(label: g),
+          );
+        }).toList(),
       ),
     );
   }
 }
 
+class _GenreChip extends StatelessWidget {
+  final String label;
+  const _GenreChip({required this.label});
+>>>>>>> a0b82e6266a8196b782ef9360c00194ab10409c6
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.dark,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.buttonText,
+          fontSize: 12,
+          fontFamily: 'InclusiveSans',
+        ),
+      ),
+    );
+  }
+}
+
+<<<<<<< HEAD
 // ── _MovieCard ─────────────────────────────────────────────────────────────────
+=======
+//  Carrusel horizontal con datos reales + difuminado en bordes 
+class _MovieCarousel extends StatelessWidget {
+  final MovieProvider movieProvider;
+  const _MovieCarousel({required this.movieProvider});
+
+  @override
+  Widget build(BuildContext context) {
+    if (movieProvider.isLoading && movieProvider.movies.isEmpty) {
+      return const SizedBox(
+        height: 130,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (movieProvider.error != null && movieProvider.movies.isEmpty) {
+      return SizedBox(
+        height: 130,
+        child: Center(
+          child: Text(
+            '${movieProvider.error}',
+            style: const TextStyle(
+              color: AppColors.hint,
+              fontFamily: 'InclusiveSans',
+            ),
+          ),
+        ),
+      );
+    }
+    // difuminado en los bordes laterales del carrusel
+    return ShaderMask(
+      shaderCallback: (bounds) => const LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: [
+          Colors.transparent,
+          Colors.white,
+          Colors.white,
+          Colors.transparent,
+        ],
+        stops: [0.0, 0.08, 0.92, 1.0],
+      ).createShader(bounds),
+      blendMode: BlendMode.dstIn,
+      child: SizedBox(
+        height: 130,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: movieProvider.movies.length + 1,
+          separatorBuilder: (_, __) => const SizedBox(width: 10),
+          itemBuilder: (context, index) {
+            if (index == movieProvider.movies.length) {
+              return Center(
+                child: movieProvider.isLoading
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : GestureDetector(
+                        onTap: () => movieProvider.loadNextPage(),
+                        child: const Icon(
+                          Icons.chevron_right,
+                          color: AppColors.hint,
+                          size: 22,
+                        ),
+                      ),
+              );
+            }
+            final movie = movieProvider.movies[index];
+            return _MovieCard(movie: movie);
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// ── Card individual de película (poster real) 
+>>>>>>> a0b82e6266a8196b782ef9360c00194ab10409c6
 class _MovieCard extends StatelessWidget {
   final dynamic movie;
   const _MovieCard({this.movie});
@@ -1413,6 +1571,7 @@ class _MovieCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       clipBehavior: Clip.hardEdge,
+<<<<<<< HEAD
       child: movie == null
           ? null
           : Stack(
@@ -1459,11 +1618,27 @@ class _MovieCard extends StatelessWidget {
                 ),
               ],
             ),
+=======
+      child: movie != null && movie.posterPath.isNotEmpty
+          ? Image.network(
+              movie.posterPath,
+              // Mismo ajuste aquí
+              fit: BoxFit.cover,
+              alignment: Alignment
+                  .topCenter, // prioriza mostrar la cara/título arriba del póster, en vez de recortar por el centro
+              errorBuilder: (_, __, ___) => const SizedBox(),
+            )
+          : null,
+>>>>>>> a0b82e6266a8196b782ef9360c00194ab10409c6
     );
   }
 }
 
+<<<<<<< HEAD
 // ── _ReviewCard ────────────────────────────────────────────────────────────────
+=======
+// ── Card de opinión con datos reales de la API 
+>>>>>>> a0b82e6266a8196b782ef9360c00194ab10409c6
 class _ReviewCard extends StatefulWidget {
   final MovieReview movieReview;
   const _ReviewCard({required this.movieReview});
@@ -1567,6 +1742,7 @@ class _ReviewCardState extends State<_ReviewCard> {
     );
   }
 }
+<<<<<<< HEAD
 
 // ── _GenreSection ──────────────────────────────────────────────────────────────
 class _GenreSection extends StatelessWidget {
@@ -1617,3 +1793,5 @@ class _GenreSection extends StatelessWidget {
 }
 =======
 >>>>>>> fb411c076ef30900fea8644d52732bcc88449d84
+=======
+>>>>>>> a0b82e6266a8196b782ef9360c00194ab10409c6

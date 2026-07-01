@@ -171,6 +171,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   const SizedBox(height: 16),
 
+<<<<<<< HEAD
                   // Contraseña
                   AppTextField(
                     controller: _passwordCtrl,
@@ -200,6 +201,47 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       onPressed: () =>
                           setState(() => _obscurePassword = !_obscurePassword),
+=======
+                AppTextField(
+                  controller: _emailCtrl,
+                  hint: 'Correo electrónico',
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (v) {
+                    if (v == null || v.isEmpty) {
+                      return 'El correo es obligatorio';
+                    }
+                    if (!v.contains('@')) {
+                      return 'Escribe un correo válido, falta el @';
+                    }
+                    if (!v.contains('.')) {
+                      return 'Escribe un correo válido, falta el dominio';
+                    }
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                AppTextField(
+                  controller: _passwordCtrl,
+                  hint: 'Contraseña',
+                  obscureText: _obscurePassword,
+                  validator: (v) {
+                    if (v == null || v.isEmpty) {
+                      return 'La contraseña es obligatoria';
+                    }
+                    if (v.length < 6) {
+                      return 'La contraseña debe tener al menos 6 caracteres';
+                    }
+                    return null;
+                  },
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      color: AppColors.hint,
+>>>>>>> a0b82e6266a8196b782ef9360c00194ab10409c6
                     ),
                   ),
 
