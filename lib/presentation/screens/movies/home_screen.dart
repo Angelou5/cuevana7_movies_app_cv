@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -6,9 +7,10 @@ import 'package:cuevana7_movies_app_cv/presentation/providers/movie_provider.dar
 import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/wide_movie_card.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/movie_card.dart';
-import 'package:cuevana7_movies_app_cv/presentation/widgets/genre_section.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/review_card.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_nav_bar.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/search_bar_widget.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_fade_mask.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String name = 'home';
@@ -22,7 +24,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
-  // [TAREA: Menú desplegable de perfil] — controla visibilidad del dropdown
   bool _showProfileMenu = false;
 
   @override
@@ -32,10 +33,18 @@ class _HomeScreenState extends State<HomeScreen> {
       context.read<MovieProvider>().loadNowPlaying();
     });
   }
+
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() => _searchQuery = '');
+    context.read<MovieProvider>().clearSearch();
+    FocusScope.of(context).unfocus();
   }
 
   List<dynamic> get _filteredMovies {
@@ -56,7 +65,6 @@ class _HomeScreenState extends State<HomeScreen> {
     child: const Icon(Icons.movie, color: AppColors.hint),
   );
 
-  // [TAREA: Menú desplegable de perfil] — dialog de confirmación al cerrar sesión
   void _showLogoutDialog() {
     showDialog(
       context: context,
@@ -153,9 +161,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final movieProvider = context.watch<MovieProvider>();
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          // ── Contenido principal (original sin cambios) ─────────────────
+          // ── Contenido principal ─────────────────
           Container(
             width: double.infinity,
             height: double.infinity,
@@ -170,7 +179,6 @@ class _HomeScreenState extends State<HomeScreen> {
             child: SafeArea(
               child: Column(
                 children: [
-                  // ── Buscador + Avatar ────────────────────────
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
@@ -179,48 +187,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: Container(
-                            height: 64,
-                            decoration: BoxDecoration(
-                              color: AppColors.inputFill,
-                              borderRadius: BorderRadius.circular(45),
-                            ),
-                            child: TextField(
-                              controller: _searchController,
-                              style: const TextStyle(
-                                color: AppColors.white,
-                                fontSize: 16,
-                                fontFamily: 'InclusiveSans',
-                              ),
-                              decoration: const InputDecoration(
-                                hintText: 'Buscar',
-                                hintStyle: TextStyle(
-                                  color: AppColors.hint,
-                                  fontSize: 24,
-                                  fontFamily: 'InclusiveSans',
-                                ),
-                                prefixIcon: Icon(
-                                  Icons.search,
-                                  color: AppColors.hint,
-                                  size: 22,
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(
-                                  vertical: 20,
-                                ),
-                              ),
-                              onChanged: (value) {
-                                setState(() {
-                                  _searchQuery = value.toLowerCase();
-                                });
-                                context
-                                    .read<MovieProvider>()
-                                    .onSearchChanged(value);
-                              },
-                              onTapOutside: (_) {
-                                FocusScope.of(context).unfocus();
-                              },
-                            ),
+                          child: SearchBarWidget(
+                            controller: _searchController,
+                            onChanged: (value) {
+                              setState(() {
+                                _searchQuery = value.toLowerCase();
+                              });
+                              context.read<MovieProvider>().onSearchChanged(
+                                value,
+                              );
+                            },
+                            onClear: _clearSearch,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -247,317 +224,305 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // ── Resultados de búsqueda ───────────────────
-                          if (_searchQuery.isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 24),
-                              child: Text('Resultados', style: _sectionTitle),
-                            ),
-                            const SizedBox(height: 10),
-                            Consumer<MovieProvider>(
-                              builder: (context, mp, _) {
-                                if (mp.isSearching) {
-                                  return const Padding(
-                                    padding: EdgeInsets.only(top: 40),
-                                    child: Center(
-                                      child: CircularProgressIndicator(
-                                        color: AppColors.white,
-                                        strokeWidth: 2,
+                    child: BottomFadeMask(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // ── Resultados de búsqueda ───────────────────
+                            if (_searchQuery.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 24),
+                                child: Text('Resultados', style: _sectionTitle),
+                              ),
+                              const SizedBox(height: 10),
+                              Consumer<MovieProvider>(
+                                builder: (context, mp, _) {
+                                  if (mp.isSearching) {
+                                    return const Padding(
+                                      padding: EdgeInsets.only(top: 40),
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          color: AppColors.white,
+                                          strokeWidth: 2,
+                                        ),
                                       ),
+                                    );
+                                  }
+                                  if (mp.searchResults.isEmpty) {
+                                    return const Padding(
+                                      padding: EdgeInsets.only(top: 40),
+                                      child: Center(
+                                        child: Text(
+                                          'Sin resultados',
+                                          style: TextStyle(
+                                            color: AppColors.hint,
+                                            fontFamily: 'InclusiveSans',
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                    ),
+                                    child: Column(
+                                      children: mp.searchResults.map((movie) {
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: 10,
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                child:
+                                                    movie.posterPath.isNotEmpty
+                                                    ? Image.network(
+                                                        movie.posterPath,
+                                                        width: 50,
+                                                        height: 70,
+                                                        fit: BoxFit.cover,
+                                                        errorBuilder:
+                                                            (_, __, ___) =>
+                                                                _posterPlaceholder(),
+                                                      )
+                                                    : _posterPlaceholder(),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      movie.title,
+                                                      maxLines: 2,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: const TextStyle(
+                                                        color: AppColors.white,
+                                                        fontSize: 14,
+                                                        fontFamily:
+                                                            'InclusiveSans',
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      '${movie.releaseDate.year}',
+                                                      style: const TextStyle(
+                                                        color: AppColors.hint,
+                                                        fontSize: 12,
+                                                        fontFamily:
+                                                            'InclusiveSans',
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 2),
+                                                    Row(
+                                                      children: [
+                                                        const Icon(
+                                                          Icons.star,
+                                                          color: Colors.amber,
+                                                          size: 13,
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 3,
+                                                        ),
+                                                        Text(
+                                                          movie.voteAverage
+                                                              .toStringAsFixed(
+                                                                1,
+                                                              ),
+                                                          style: const TextStyle(
+                                                            color:
+                                                                AppColors.hint,
+                                                            fontSize: 12,
+                                                            fontFamily:
+                                                                'InclusiveSans',
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }).toList(),
                                     ),
                                   );
-                                }
-                                if (mp.searchResults.isEmpty) {
-                                  return const Padding(
-                                    padding: EdgeInsets.only(top: 40),
-                                    child: Center(
-                                      child: Text(
-                                        'Sin resultados',
+                                },
+                              ),
+                              const SizedBox(height: 24),
+                            ] else ...[
+                              movieProvider.isLoading &&
+                                      movieProvider.movies.isEmpty
+                                  ? const SizedBox(
+                                      height: 169,
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          color: AppColors.white,
+                                        ),
+                                      ),
+                                    )
+                                  : _AutoWideCarousel(
+                                      movies: _filteredMovies,
+                                      height: 169,
+                                    ),
+
+                              // ── Novedades ────────────────────────────
+                              const SizedBox(height: 24),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 24),
+                                child: Text('Novedades', style: _sectionTitle),
+                              ),
+                              const SizedBox(height: 10),
+                              // [TAREA: Desvanecido izquierdo carruseles] — carrusel novedades con fade
+                              _LeftFadedCarousel(
+                                height: 190,
+                                child:
+                                    movieProvider.isLoading &&
+                                        movieProvider.movies.isEmpty
+                                    ? const Center(
+                                        child: CircularProgressIndicator(
+                                          color: AppColors.white,
+                                        ),
+                                      )
+                                    : movieProvider.error != null &&
+                                          movieProvider.movies.isEmpty
+                                    ? Center(
+                                        child: Text(
+                                          '${movieProvider.error}',
+                                          style: const TextStyle(
+                                            color: AppColors.hint,
+                                            fontFamily: 'InclusiveSans',
+                                          ),
+                                        ),
+                                      )
+                                    : ListView.separated(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 24,
+                                        ),
+                                        scrollDirection: Axis.horizontal,
+                                        itemCount: _filteredMovies.length + 1,
+                                        separatorBuilder: (_, __) =>
+                                            const SizedBox(width: 10),
+                                        itemBuilder: (context, index) {
+                                          if (index == _filteredMovies.length) {
+                                            return Center(
+                                              child: movieProvider.isLoading
+                                                  ? const SizedBox(
+                                                      width: 22,
+                                                      height: 22,
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                            color:
+                                                                AppColors.white,
+                                                            strokeWidth: 2,
+                                                          ),
+                                                    )
+                                                  : GestureDetector(
+                                                      onTap: () => context
+                                                          .read<MovieProvider>()
+                                                          .loadNextPage(),
+                                                      child: const Icon(
+                                                        Icons.chevron_right,
+                                                        color: AppColors.hint,
+                                                        size: 22,
+                                                      ),
+                                                    ),
+                                            );
+                                          }
+                                          return MovieCard(
+                                            movie: _filteredMovies[index],
+                                          );
+                                        },
+                                      ),
+                              ),
+
+                              const SizedBox(height: 24),
+                              _FadedGenreSection(
+                                title: 'Comedias',
+                                movies: movieProvider.moviesComedia,
+                              ),
+                              const SizedBox(height: 24),
+                              _FadedGenreSection(
+                                title: 'Terror',
+                                movies: movieProvider.moviesTerror,
+                              ),
+                              const SizedBox(height: 24),
+                              _FadedGenreSection(
+                                title: 'Suspenso',
+                                movies: movieProvider.moviesSuspenso,
+                              ),
+                              const SizedBox(height: 24),
+                              _FadedGenreSection(
+                                title: 'Acción',
+                                movies: movieProvider.moviesAccion,
+                              ),
+
+                              // ── Opiniones ────────────────────────────
+                              const SizedBox(height: 24),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 24),
+                                child: Text('Opiniones', style: _sectionTitle),
+                              ),
+                              const SizedBox(height: 10),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                ),
+                                child: movieProvider.movieReviews.isEmpty
+                                    ? const Text(
+                                        'No hay opiniones disponibles',
                                         style: TextStyle(
                                           color: AppColors.hint,
                                           fontFamily: 'InclusiveSans',
                                         ),
-                                      ),
-                                    ),
-                                  );
-                                }
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                  ),
-                                  child: Column(
-                                    children: mp.searchResults.map((movie) {
-                                      return Padding(
-                                        padding: const EdgeInsets.only(
-                                          bottom: 10,
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              child: movie.posterPath.isNotEmpty
-                                                  ? Image.network(
-                                                      movie.posterPath,
-                                                      width: 50,
-                                                      height: 70,
-                                                      fit: BoxFit.cover,
-                                                      errorBuilder: (_, __, ___) =>
-                                                          _posterPlaceholder(),
-                                                    )
-                                                  : _posterPlaceholder(),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    movie.title,
-                                                    maxLines: 2,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: const TextStyle(
-                                                      color: AppColors.white,
-                                                      fontSize: 14,
-                                                      fontFamily:
-                                                          'InclusiveSans',
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 4),
-                                                  Text(
-                                                    '${movie.releaseDate.year}',
-                                                    style: const TextStyle(
-                                                      color: AppColors.hint,
-                                                      fontSize: 12,
-                                                      fontFamily:
-                                                          'InclusiveSans',
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 2),
-                                                  Row(
-                                                    children: [
-                                                      const Icon(
-                                                        Icons.star,
-                                                        color: Colors.amber,
-                                                        size: 13,
-                                                      ),
-                                                      const SizedBox(width: 3),
-                                                      Text(
-                                                        movie.voteAverage
-                                                            .toStringAsFixed(1),
-                                                        style: const TextStyle(
-                                                          color: AppColors.hint,
-                                                          fontSize: 12,
-                                                          fontFamily:
-                                                              'InclusiveSans',
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
+                                      )
+                                    : Column(
+                                        children: movieProvider.movieReviews
+                                            .take(10)
+                                            .map(
+                                              (mr) => Padding(
+                                                padding: const EdgeInsets.only(
+                                                  bottom: 10,
+                                                ),
+                                                child: ReviewCard(
+                                                  movieReview: mr,
+                                                ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ),
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 24),
-                          ] else ...[
-                            // [TAREA: Desvanecido izquierdo carruseles] — carrusel destacado con fade
-                            _LeftFadedCarousel(
-                              height: 169,
-                              child:
-                                  movieProvider.isLoading &&
-                                      movieProvider.movies.isEmpty
-                                  ? const Center(
-                                      child: CircularProgressIndicator(
-                                        color: AppColors.white,
+                                            )
+                                            .toList(),
                                       ),
-                                    )
-                                  : ListView.separated(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 24,
-                                      ),
-                                      scrollDirection: Axis.horizontal,
-                                      itemCount: _filteredMovies.length,
-                                      separatorBuilder: (_, __) =>
-                                          const SizedBox(width: 12),
-                                      itemBuilder: (context, index) =>
-                                          WideMovieCard(
-                                            movie: _filteredMovies[index],
-                                          ),
-                                    ),
-                            ),
-
-                            // ── Novedades ────────────────────────────
-                            const SizedBox(height: 24),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 24),
-                              child: Text('Novedades', style: _sectionTitle),
-                            ),
-                            const SizedBox(height: 10),
-                            // [TAREA: Desvanecido izquierdo carruseles] — carrusel novedades con fade
-                            _LeftFadedCarousel(
-                              height: 190,
-                              child:
-                                  movieProvider.isLoading &&
-                                      movieProvider.movies.isEmpty
-                                  ? const Center(
-                                      child: CircularProgressIndicator(
-                                        color: AppColors.white,
-                                      ),
-                                    )
-                                  : movieProvider.error != null &&
-                                        movieProvider.movies.isEmpty
-                                  ? Center(
-                                      child: Text(
-                                        '${movieProvider.error}',
-                                        style: const TextStyle(
-                                          color: AppColors.hint,
-                                          fontFamily: 'InclusiveSans',
-                                        ),
-                                      ),
-                                    )
-                                  : ListView.separated(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 24,
-                                      ),
-                                      scrollDirection: Axis.horizontal,
-                                      itemCount: _filteredMovies.length + 1,
-                                      separatorBuilder: (_, __) =>
-                                          const SizedBox(width: 10),
-                                      itemBuilder: (context, index) {
-                                        if (index == _filteredMovies.length) {
-                                          return Center(
-                                            child: movieProvider.isLoading
-                                                ? const SizedBox(
-                                                    width: 22,
-                                                    height: 22,
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                          color:
-                                                              AppColors.white,
-                                                          strokeWidth: 2,
-                                                        ),
-                                                  )
-                                                : GestureDetector(
-                                                    onTap: () => context
-                                                        .read<MovieProvider>()
-                                                        .loadNextPage(),
-                                                    child: const Icon(
-                                                      Icons.chevron_right,
-                                                      color: AppColors.hint,
-                                                      size: 22,
-                                                    ),
-                                                  ),
-                                          );
-                                        }
-                                        return MovieCard(
-                                          movie: _filteredMovies[index],
-                                        );
-                                      },
-                                    ),
-                            ),
-
-                            // [TAREA: Desvanecido carruseles] — géneros con fade en ambos lados
-                            const SizedBox(height: 24),
-                            _FadedGenreSection(
-                              title: 'Películas familiares',
-                              movies: movieProvider.moviesFamilia,
-                            ),
-                            const SizedBox(height: 24),
-                            _FadedGenreSection(
-                              title: 'Comedias',
-                              movies: movieProvider.moviesComedia,
-                            ),
-                            const SizedBox(height: 24),
-                            _FadedGenreSection(
-                              title: 'Terror',
-                              movies: movieProvider.moviesTerror,
-                            ),
-                            const SizedBox(height: 24),
-                            _FadedGenreSection(
-                              title: 'Suspenso',
-                              movies: movieProvider.moviesSuspenso,
-                            ),
-                            const SizedBox(height: 24),
-                            _FadedGenreSection(
-                              title: 'Acción',
-                              movies: movieProvider.moviesAccion,
-                            ),
-
-                            // ── Opiniones ────────────────────────────
-                            const SizedBox(height: 24),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 24),
-                              child: Text('Opiniones', style: _sectionTitle),
-                            ),
-                            const SizedBox(height: 10),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
                               ),
-                              child: movieProvider.movieReviews.isEmpty
-                                  ? const Text(
-                                      'No hay opiniones disponibles',
-                                      style: TextStyle(
-                                        color: AppColors.hint,
-                                        fontFamily: 'InclusiveSans',
-                                      ),
-                                    )
-                                  : Column(
-                                      children: movieProvider.movieReviews
-                                          .take(10)
-                                          .map(
-                                            (mr) => Padding(
-                                              padding: const EdgeInsets.only(
-                                                bottom: 10,
-                                              ),
-                                              child: ReviewCard(
-                                                movieReview: mr,
-                                              ),
-                                            ),
-                                          )
-                                          .toList(),
-                                    ),
-                            ),
+                            ],
+                            // ── Espacio final para que el contenido no
+                            // quede tapado detrás de la navbar flotante,
+                            // usando el mismo espaciado que entre reviews ──
+                            const SizedBox(height: 10),
                           ],
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-
-                  // ── Navbar flotante compartida ───────────────────────
-                  BottomNavBar(
-                    activeTab: NavTab.home,
-                    isVisible: true,
                   ),
                 ],
               ),
             ),
           ),
 
-          // [TAREA: Menú desplegable de perfil] — tap fuera cierra el dropdown
           if (_showProfileMenu)
             GestureDetector(
               onTap: () => setState(() => _showProfileMenu = false),
               child: Container(color: Colors.transparent),
             ),
 
-          // [TAREA: Menú desplegable de perfil] — panel del dropdown posicionado bajo el avatar
           if (_showProfileMenu)
             Positioned(
               top: MediaQuery.of(context).padding.top + 88,
@@ -565,8 +530,6 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Material(
                 color: Colors.transparent,
                 child: Container(
-                  // [TAREA: Fix overflow] — ancho aumentado de 260 a 290 para que
-                  // "Lista de reproducción" no desborde
                   width: 290,
                   decoration: BoxDecoration(
                     color: const Color(0xFF2C2C2E),
@@ -629,14 +592,111 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+
+          // ── Navbar flotante sobre el contenido ─────────────────
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SafeArea(
+              top: false,
+              child: BottomNavBar(activeTab: NavTab.home, isVisible: true),
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-// [TAREA: Desvanecido carruseles] — igual que GenreSection pero con fade
-// en ambos lados del carrusel. El título queda fuera del ShaderMask.
+class _AutoWideCarousel extends StatefulWidget {
+  final List<dynamic> movies;
+  final double height;
+
+  const _AutoWideCarousel({required this.movies, required this.height});
+
+  @override
+  State<_AutoWideCarousel> createState() => _AutoWideCarouselState();
+}
+
+class _AutoWideCarouselState extends State<_AutoWideCarousel> {
+  late final PageController _pageController;
+  Timer? _timer;
+  int _currentPage = 0;
+
+  static const double _horizontalPadding = 24;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(viewportFraction: 1.0);
+    _startAutoPlay();
+  }
+
+  void _startAutoPlay() {
+    _timer?.cancel();
+    if (widget.movies.length <= 1) return;
+    _timer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted || !_pageController.hasClients) return;
+      final next = (_currentPage + 1) % widget.movies.length;
+      _pageController.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant _AutoWideCarousel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // si cambia la lista (ej. filtro de búsqueda), reinicia el autoplay
+    if (oldWidget.movies.length != widget.movies.length) {
+      _currentPage = 0;
+      _startAutoPlay();
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.movies.isEmpty) {
+      return SizedBox(height: widget.height);
+    }
+
+    return SizedBox(
+      height: widget.height,
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification is UserScrollNotification) {
+            _startAutoPlay();
+          }
+          return false;
+        },
+        child: PageView.builder(
+          controller: _pageController,
+          itemCount: widget.movies.length,
+          onPageChanged: (index) => _currentPage = index,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: _horizontalPadding,
+              ),
+              child: Center(child: WideMovieCard(movie: widget.movies[index])),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
 class _FadedGenreSection extends StatelessWidget {
   final String title;
   final List<dynamic> movies;
@@ -717,8 +777,6 @@ class _LeftFadedCarousel extends StatelessWidget {
   }
 }
 
-// [TAREA: Menú desplegable de perfil] — ítem individual del dropdown
-// fontSize reducido a 14 para evitar overflow en textos largos
 class _ProfileMenuItem extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -748,7 +806,6 @@ class _ProfileMenuItem extends StatelessWidget {
               label,
               style: TextStyle(
                 color: color,
-                // [TAREA: Fix overflow] — reducido de 16 a 14 para evitar desborde
                 fontSize: 14,
                 fontFamily: 'InclusiveSans',
                 fontWeight: FontWeight.w400,

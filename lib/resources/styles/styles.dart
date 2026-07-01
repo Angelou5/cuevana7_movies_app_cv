@@ -21,32 +21,36 @@ class AppStyles {
   static const TextStyle hintField = TextStyle(
     color: AppColors.hint,
     fontSize: 24,
-    fontFamily: 'InclusiveSans',
+    fontWeight: FontWeight.w400,
+    fontFamily: 'Montserrat',
   );
 
   static const TextStyle fieldText = TextStyle(
     color: AppColors.white,
     fontSize: 24,
-    fontFamily: 'InclusiveSans',
+    fontWeight: FontWeight.w400,
+    fontFamily: 'Montserrat',
   );
 
   static const TextStyle forgotPassword = TextStyle(
     color: AppColors.divider, // antes grey, ahora divider
     fontSize: 16,
-    fontFamily: 'InclusiveSans',
+    fontWeight: FontWeight.w400,
+    fontFamily: 'Montserrat',
   );
 
   static const TextStyle buttonLabel = TextStyle(
     color: AppColors.white,
     fontSize: 24,
     fontWeight: FontWeight.w400,
-    fontFamily: 'InclusiveSans',
+    fontFamily: 'Montserrat',
   );
 
   static const TextStyle dividerLabel = TextStyle(
     // re-agregado
     color: AppColors.divider,
     fontSize: 18,
-    fontFamily: 'InclusiveSans',
+    fontWeight: FontWeight.w400,
+    fontFamily: 'Montserrat',
   );
 }

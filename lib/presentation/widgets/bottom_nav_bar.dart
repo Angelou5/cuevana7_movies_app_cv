@@ -24,18 +24,20 @@ class BottomNavBar extends StatelessWidget {
         alignment: Alignment.topCenter,
         heightFactor: isVisible ? 1.0 : 0.0,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 6),
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.background.withValues(alpha: 0.83),
+              color: const Color(0xFA1B1B1B), // rgba(27, 27, 27, 0.98)
               borderRadius: BorderRadius.circular(16),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _NavItem(
                   iconPath: 'assets/images/icono_home.svg',
+                  // [TAREA: Ícono blanco al estar activo]
+                  activeIconPath: 'assets/images/homewhite.svg',
                   label: 'Inicio',
                   isActive: activeTab == NavTab.home,
                   onTap: activeTab == NavTab.home
@@ -44,6 +46,8 @@ class BottomNavBar extends StatelessWidget {
                 ),
                 _NavItem(
                   iconPath: 'assets/images/icono_fav.svg',
+                  // [TAREA: Ícono blanco al estar activo]
+                  activeIconPath: 'assets/images/favoritewhite.svg',
                   label: 'Guardados',
                   isActive: activeTab == NavTab.favorites,
                   onTap: activeTab == NavTab.favorites
@@ -52,6 +56,8 @@ class BottomNavBar extends StatelessWidget {
                 ),
                 _NavItem(
                   iconPath: 'assets/images/icono_peli.svg',
+                  // [TAREA: Ícono blanco al estar activo]
+                  activeIconPath: 'assets/images/moviewhite.svg',
                   label: 'Películas',
                   isActive: activeTab == NavTab.movies,
                   onTap: activeTab == NavTab.movies
@@ -69,12 +75,14 @@ class BottomNavBar extends StatelessWidget {
 
 class _NavItem extends StatelessWidget {
   final String iconPath;
+  final String activeIconPath;
   final String label;
   final bool isActive;
   final VoidCallback? onTap;
 
   const _NavItem({
     required this.iconPath,
+    required this.activeIconPath,
     required this.label,
     required this.isActive,
     this.onTap,
@@ -88,22 +96,24 @@ class _NavItem extends StatelessWidget {
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: isActive
-                ? AppColors.white.withValues(alpha: 0.10)
-                : Colors.transparent,
+            color: Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: SvgPicture.asset(
-            iconPath,
-            width: 28,
-            height: 28,
-            colorFilter: ColorFilter.mode(
-              isActive ? AppColors.white : AppColors.hint,
-              BlendMode.srcIn,
-            ),
-          ),
+          // [TAREA: Ícono blanco al estar activo] — usa el svg "white"
+          // correspondiente en vez de tintar con colorFilter
+          child: isActive
+              ? SvgPicture.asset(activeIconPath, width: 40, height: 40)
+              : SvgPicture.asset(
+                  iconPath,
+                  width: 40,
+                  height: 40,
+                  colorFilter: ColorFilter.mode(
+                    AppColors.hint,
+                    BlendMode.srcIn,
+                  ),
+                ),
         ),
       ),
     );
