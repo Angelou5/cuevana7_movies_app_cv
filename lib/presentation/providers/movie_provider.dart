@@ -21,9 +21,15 @@ class MovieProvider extends ChangeNotifier {
   List<Movie> moviesFamilia = [];
   List<MovieReview> movieReviews = [];
 
+<<<<<<< HEAD
   List<Movie> searchResults = []; // 👈
   bool isSearching = false; // 👈
   Timer? _debounce; // 👈
+=======
+  List<Movie> searchResults = [];
+  bool isSearching = false;
+  Timer? _debounce;
+>>>>>>> fb411c076ef30900fea8644d52732bcc88449d84
 
   bool isLoading = false;
   String? error;
