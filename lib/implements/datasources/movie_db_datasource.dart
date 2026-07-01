@@ -42,6 +42,36 @@ class MovieDbDatasource implements MovieDatasources {
     return movies;
   }
 
+  // se implemento getMoviesByGenre que llama al endpoint de TMDB
+  @override
+  Future<List<Movie>> getMoviesByGenre(int genreId, {int page = 1}) async {
+    final url = Uri.parse(
+      '$_baseUrl/discover/movie?with_genres=$genreId&page=$page&language=es-MX',
+    );
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $_token',
+        'accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Error al cargar pelis por género de TMDB: ${response.statusCode}',
+      );
+    }
+
+    final data = jsonDecode(response.body);
+
+    final List<Movie> movies = (data['results'] as List)
+        .map((movieJson) => MovieMapper.fromJson(movieJson))
+        .toList();
+
+    return movies;
+  }
+
   @override
   Future<List<Review>> getMovieReviews(int movieId) async {
     final headers = {

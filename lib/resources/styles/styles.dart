@@ -4,41 +4,53 @@ import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 class AppStyles {
   AppStyles._();
 
+  static const TextStyle appName = TextStyle(
+    color: AppColors.white,
+    fontSize: 20,
+    fontWeight: FontWeight.w500,
+    fontFamily: 'Montserrat',
+  );
+
   static const TextStyle title = TextStyle(
-    color: AppColors.dark,
+    color: AppColors.white,
     fontSize: 32,
     fontWeight: FontWeight.w500,
-    fontFamily: 'InclusiveSans',
+    fontFamily: 'Montserrat',
   );
 
   static const TextStyle hintField = TextStyle(
     color: AppColors.hint,
-    fontSize: 18,
-    fontFamily: 'InclusiveSans',
+    fontSize: 24,
+    fontWeight: FontWeight.w400,
+    fontFamily: 'Montserrat',
   );
 
   static const TextStyle fieldText = TextStyle(
-    color: AppColors.dark,
-    fontSize: 18,
-    fontFamily: 'InclusiveSans',
+    color: AppColors.white,
+    fontSize: 24,
+    fontWeight: FontWeight.w400,
+    fontFamily: 'Montserrat',
   );
 
   static const TextStyle forgotPassword = TextStyle(
-    color: AppColors.hint,
+    color: AppColors.divider, // antes grey, ahora divider
     fontSize: 16,
-    fontFamily: 'InclusiveSans',
+    fontWeight: FontWeight.w400,
+    fontFamily: 'Montserrat',
   );
 
   static const TextStyle buttonLabel = TextStyle(
-    color: AppColors.buttonText,
-    fontSize: 20,
+    color: AppColors.white,
+    fontSize: 24,
     fontWeight: FontWeight.w400,
-    fontFamily: 'InclusiveSans',
+    fontFamily: 'Montserrat',
   );
 
   static const TextStyle dividerLabel = TextStyle(
-    color: AppColors.dark,
+    // re-agregado
+    color: AppColors.divider,
     fontSize: 18,
-    fontFamily: 'InclusiveSans',
+    fontWeight: FontWeight.w400,
+    fontFamily: 'Montserrat',
   );
 }

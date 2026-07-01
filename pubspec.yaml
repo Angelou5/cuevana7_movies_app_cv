@@ -14,6 +14,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   postgres: 2.6.1
+  flutter_svg: ^2.0.10+1
   bcrypt: 1.2.0
   shelf: ^1.4.2
   shelf_router: ^1.1.4
@@ -40,9 +41,13 @@ flutter:
     - .env
 
   fonts:
-    - family: InclusiveSans
+    - family: Montserrat
       fonts:
-        - asset: assets/fonts/InclusiveSans-VariableFont_wght.ttf
+        - asset: assets/fonts/Montserrat-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Montserrat-Medium.ttf
+          weight: 500
+
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true

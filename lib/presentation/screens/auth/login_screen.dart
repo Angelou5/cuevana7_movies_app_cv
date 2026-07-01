@@ -4,7 +4,6 @@ import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 import 'package:cuevana7_movies_app_cv/resources/styles/styles.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/app_text_field.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/primary_button.dart';
-import 'package:cuevana7_movies_app_cv/presentation/widgets/or_divider.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/applogo.dart';
 import '../../../implements/datasources/biometric_datasource_impl.dart';
 import 'dart:convert';
@@ -38,19 +37,12 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
- void _onLoginPressed() async {
+  void _onLoginPressed() async {
     setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
-
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isLoading = true);
-
     try {
-
-      // este es el dominio
       final url = Uri.parse('https://pixonsite.org/signin');
-      
-      // peticion
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -59,33 +51,26 @@ class _LoginScreenState extends State<LoginScreen> {
           'password': _passwordCtrl.text,
         }),
       );
-
       if (!mounted) return;
-
-      // verificar si funciona y nos permite
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final String token = data['token'];
-
         await context.read<AuthProvider>().setToken(token);
-
         const storage = FlutterSecureStorage();
         await storage.write(key: 'saved_email', value: _emailCtrl.text.trim());
         await storage.write(key: 'saved_password', value: _passwordCtrl.text);
-
         if (!mounted) return;
         context.go('/');
       } else {
-        // Credenciales inválidas 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Correo o contraseña incorrectos xd')),
         );
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error de conexión: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error de conexión: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -93,18 +78,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _authenticateWithFingerprint() async {
     final auth = context.read<AuthProvider>();
-
     if (auth.isAuthenticated) {
       final ok = await biometricService.authenticate();
       if (!mounted) return;
       if (ok) context.go('/');
       return;
     }
-
     const storage = FlutterSecureStorage();
     final savedEmail = await storage.read(key: 'saved_email');
     final savedPassword = await storage.read(key: 'saved_password');
-
     if (savedEmail == null || savedPassword == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -112,11 +94,9 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       return;
     }
-
     final authenticated = await biometricService.authenticate();
     if (!mounted) return;
     if (!authenticated) return;
-
     setState(() => _isLoading = true);
     try {
       final url = Uri.parse('https://pixonsite.org/signin');
@@ -132,144 +112,201 @@ class _LoginScreenState extends State<LoginScreen> {
         context.go('/');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sesión expirada, inicia sesión de nuevo')),
+          const SnackBar(
+            content: Text('Sesión expirada, inicia sesión de nuevo'),
+          ),
         );
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error de conexión: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error de conexión: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  // [TAREA: Espaciado correcto del ícono mostrar/ocultar] — constraints
+  // fijas y padding cero en el IconButton, más un margen derecho explícito
+  // para que quede a la misma distancia del borde que el texto lo está
+  // del borde izquierdo (contentPadding horizontal de AppTextField)
+  Widget _visibilityToggle({
+    required bool obscure,
+    required VoidCallback onToggle,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 20),
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+        splashRadius: 20,
+        icon: Icon(
+          obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+          color: AppColors.hint,
+          size: 22,
+        ),
+        onPressed: onToggle,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Form(
-            key: _formKey,
-            autovalidateMode: _autovalidateMode,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 40),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            stops: [0.53, 1.0],
+            colors: [AppColors.background, AppColors.dark],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Center(
+              // [TAREA: Responsividad] — limita el ancho máximo en
+              // pantallas grandes (tablets/desktop)
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: Form(
+                  key: _formKey,
+                  autovalidateMode: _autovalidateMode,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 12),
 
-                Center(child: AppLogo(logoSize: 62)),
+                      // Logo + "Cuevanita" del widget
+                      AppLogo(logoSize: 62, textColor: AppColors.white),
 
-                const SizedBox(height: 24),
+                      const SizedBox(height: 16),
 
-                const Text('Inicio de sesión', style: AppStyles.title),
-
-                const SizedBox(height: 32),
-
-                AppTextField(
-                  controller: _emailCtrl,
-                  hint: 'Correo electrónico',
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (v) {
-                    if (v == null || v.isEmpty) {
-                      return 'El correo es obligatorio';
-                    }
-                    if (!v.contains('@')) {
-                      return 'Escribe un correo válido, falta el @';
-                    }
-                    if (!v.contains('.')) {
-                      return 'Escribe un correo válido, falta el dominio';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 16),
-
-                AppTextField(
-                  controller: _passwordCtrl,
-                  hint: 'Contraseña',
-                  obscureText: _obscurePassword,
-                  validator: (v) {
-                    if (v == null || v.isEmpty) {
-                      return 'La contraseña es obligatoria';
-                    }
-                    if (v.length < 6) {
-                      return 'La contraseña debe tener al menos 6 caracteres';
-                    }
-                    return null;
-                  },
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      color: AppColors.hint,
-                    ),
-                    onPressed: () =>
-                        setState(() => _obscurePassword = !_obscurePassword),
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                TextButton(
-                  onPressed: () {},
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: const Text(
-                    '¿Olvidaste la contraseña?',
-                    style: AppStyles.forgotPassword,
-                  ),
-                ),
-
-                const SizedBox(height: 36),
-
-                PrimaryButton(
-                  label: 'Iniciar sesión',
-                  isLoading: _isLoading,
-                  onPressed: _isLoading ? null : _onLoginPressed,
-                ),
-
-                const SizedBox(height: 24),
-
-                const OrDivider(),
-
-                const SizedBox(height: 24),
-
-                PrimaryButton(
-                  label: 'Registrarse',
-                  isLoading: false,
-                  onPressed: () => context.push('/register'),
-                ),
-
-                const SizedBox(height: 24),
-
-                Center(
-                  child: GestureDetector(
-                    onTap: _authenticateWithFingerprint,//dedo
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.hint, width: 3),
+                      // Título
+                      const Text(
+                        'Inicio de sesión',
+                        style: AppStyles.title,
+                        textAlign: TextAlign.center,
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Image.asset('assets/images/huella.png'),
+
+                      const SizedBox(height: 32),
+
+                      // Campo correo
+                      AppTextField(
+                        controller: _emailCtrl,
+                        hint: 'Correo electrónico',
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return 'El correo es obligatorio';
+                          }
+                          if (!v.contains('@')) {
+                            return 'Escribe un correo válido, falta el @';
+                          }
+                          if (!v.contains('.')) {
+                            return 'Escribe un correo válido, falta el dominio';
+                          }
+                          return null;
+                        },
                       ),
-                    ),
+
+                      const SizedBox(height: 16),
+
+                      // Campo contraseña
+                      AppTextField(
+                        controller: _passwordCtrl,
+                        hint: 'Contraseña',
+                        obscureText: _obscurePassword,
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return 'La contraseña es obligatoria';
+                          }
+                          if (v.length < 6) {
+                            return 'La contraseña debe tener al menos 6 caracteres';
+                          }
+                          return null;
+                        },
+                        // [TAREA: Espaciado correcto del ícono mostrar/ocultar]
+                        suffixIcon: _visibilityToggle(
+                          obscure: _obscurePassword,
+                          onToggle: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      // Olvidaste contraseña
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton(
+                          onPressed: () {},
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text(
+                            '¿Olvidaste la contraseña?',
+                            style: AppStyles.forgotPassword,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      // Botón iniciar sesión
+                      PrimaryButton(
+                        label: 'Iniciar sesión',
+                        isLoading: _isLoading,
+                        onPressed: _isLoading ? null : _onLoginPressed,
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Botón registrarse
+                      PrimaryButton(
+                        label: 'Registrarse',
+                        isLoading: false,
+                        onPressed: () => context.push('/register'),
+                      ),
+
+                      const SizedBox(height: 80),
+
+                      // Huella dactilar
+                      Center(
+                        child: GestureDetector(
+                          onTap: _authenticateWithFingerprint,
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.profileCircle,
+                              border: Border.all(
+                                color: AppColors.divider,
+                                width: 3,
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Image.asset('assets/images/huella.png'),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 48),
+                    ],
                   ),
                 ),
-
-                const SizedBox(height: 48),
-              ],
+              ),
             ),
           ),
         ),

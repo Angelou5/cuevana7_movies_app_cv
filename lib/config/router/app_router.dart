@@ -1,10 +1,28 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart'; 
+import 'package:provider/provider.dart';
 import 'package:cuevana7_movies_app_cv/presentation/screens/movies/home_screen.dart';
 import 'package:cuevana7_movies_app_cv/presentation/screens/auth/login_screen.dart';
 import 'package:cuevana7_movies_app_cv/presentation/screens/auth/register_screen.dart';
 import 'package:cuevana7_movies_app_cv/presentation/screens/auth/splash_screen.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart';
+import 'package:cuevana7_movies_app_cv/presentation/screens/movies/favorite_screen.dart';
+import 'package:cuevana7_movies_app_cv/presentation/screens/movies/liked_screen.dart';
+
+// 👇 Helper para que cada ruta transicione con un fade en vez del
+// deslizamiento/blanco por defecto de MaterialPage. Así nunca se
+// asoma el fondo blanco base entre pantalla y pantalla.
+CustomTransitionPage _fadePage(Widget child, GoRouterState state) {
+  return CustomTransitionPage(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 220),
+    reverseTransitionDuration: const Duration(milliseconds: 220),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(opacity: animation, child: child);
+    },
+  );
+}
 
 final appRouter = GoRouter(
   initialLocation: '/splash',
@@ -12,48 +30,56 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/splash',
       name: SplashScreen.name,
-      builder: (context, state) => const SplashScreen(),
+      pageBuilder: (context, state) => _fadePage(const SplashScreen(), state),
     ),
     GoRoute(
       path: '/login',
       name: LoginScreen.name,
-      builder: (context, state) => const LoginScreen(),
+      pageBuilder: (context, state) => _fadePage(const LoginScreen(), state),
     ),
     GoRoute(
       path: '/',
       name: HomeScreen.name,
-      builder: (context, state) => const HomeScreen(),
+      pageBuilder: (context, state) => _fadePage(const HomeScreen(), state),
     ),
     GoRoute(
       path: '/register',
       name: RegisterScreen.name,
-      builder: (context, state) => const RegisterScreen(),
+      pageBuilder: (context, state) => _fadePage(const RegisterScreen(), state),
+    ),
+    GoRoute(
+      path: '/favorites',
+      pageBuilder: (context, state) => _fadePage(const FavoriteScreen(), state),
+    ),
+    GoRoute(
+      path: '/movies',
+      pageBuilder: (context, state) => _fadePage(const LikedScreen(), state),
     ),
   ],
-  
+
   // para proteger las rutas
   redirect: (context, state) {
-    // 
+    //
     final auth = context.read<AuthProvider>();
     final location = state.uri.path;
 
     // por primera vez
     if (auth.isLoading) return '/splash';
 
-  
     if (location == '/splash') {
       return auth.isAuthenticated ? '/' : '/login';
     }
 
     // rutas protegidas
-    
+
     if (!auth.isAuthenticated && location == '/') {
       return '/login';
     }
 
     // por si quiere regresar a login o register
-    
-    if (auth.isAuthenticated && (location == '/login' || location == '/register')) {
+
+    if (auth.isAuthenticated &&
+        (location == '/login' || location == '/register')) {
       return '/';
     }
 

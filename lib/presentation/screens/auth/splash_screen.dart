@@ -178,7 +178,7 @@ class _SplashScreenState extends State<SplashScreen>
             Transform.translate(
               offset: const Offset(0, -90),
               child: Text(
-                'Cuevana 7',
+                'Cuevanita',
                 style: TextStyle(
                   fontFamily: 'InclusiveSans',
                   fontSize: fontSize,

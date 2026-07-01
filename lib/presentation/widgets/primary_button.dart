@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
-import 'package:cuevana7_movies_app_cv/resources/styles/styles.dart';
 
 class PrimaryButton extends StatelessWidget {
   final String label;
@@ -22,10 +21,11 @@ class PrimaryButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.dark,
-          disabledBackgroundColor: AppColors.dark.withValues(alpha: 0.6),
+          backgroundColor: AppColors.buttonText, // rgba(25, 65, 158, 0.39)
+          shadowColor: Colors.transparent,
+          disabledBackgroundColor: AppColors.buttonText,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(45),
           ),
           elevation: 0,
         ),
@@ -34,11 +34,19 @@ class PrimaryButton extends StatelessWidget {
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(
-                  color: AppColors.buttonText,
+                  color: Colors.white,
                   strokeWidth: 2.5,
                 ),
               )
-            : Text(label, style: AppStyles.buttonLabel),
+            : Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontFamily: 'Inclusive Sans',
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
       ),
     );
   }
