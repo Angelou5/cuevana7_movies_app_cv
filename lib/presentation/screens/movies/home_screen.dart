@@ -236,12 +236,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 padding: EdgeInsets.symmetric(horizontal: 24),
                                 child: Text('Resultados', style: _sectionTitle),
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 16),
                               Consumer<MovieProvider>(
                                 builder: (context, mp, _) {
                                   if (mp.isSearching) {
-                                    return const Padding(
-                                      padding: EdgeInsets.only(top: 40),
+                                    return const SizedBox(
+                                      height: 300,
                                       child: Center(
                                         child: CircularProgressIndicator(
                                           color: AppColors.white,
@@ -251,110 +251,42 @@ class _HomeScreenState extends State<HomeScreen> {
                                     );
                                   }
                                   if (mp.searchResults.isEmpty) {
-                                    return const Padding(
-                                      padding: EdgeInsets.only(top: 40),
+                                    return const SizedBox(
+                                      height: 300,
                                       child: Center(
-                                        child: Text(
-                                          'Sin resultados',
-                                          style: TextStyle(
-                                            color: AppColors.hint,
-                                            fontFamily: 'InclusiveSans',
-                                          ),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.search_off_rounded, color: AppColors.hint, size: 48),
+                                            SizedBox(height: 12),
+                                            Text(
+                                              'Sin resultados',
+                                              style: TextStyle(
+                                                color: AppColors.hint,
+                                                fontSize: 16,
+                                                fontFamily: 'InclusiveSans',
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     );
                                   }
                                   return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                    ),
-                                    child: Column(
-                                      children: mp.searchResults.map((movie) {
-                                        return Padding(
-                                          padding: const EdgeInsets.only(
-                                            bottom: 10,
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                child:
-                                                    movie.posterPath.isNotEmpty
-                                                    ? Image.network(
-                                                        movie.posterPath,
-                                                        width: 50,
-                                                        height: 70,
-                                                        fit: BoxFit.cover,
-                                                        errorBuilder:
-                                                            (_, __, ___) =>
-                                                                _posterPlaceholder(),
-                                                      )
-                                                    : _posterPlaceholder(),
-                                              ),
-                                              const SizedBox(width: 12),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      movie.title,
-                                                      maxLines: 2,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: const TextStyle(
-                                                        color: AppColors.white,
-                                                        fontSize: 14,
-                                                        fontFamily:
-                                                            'InclusiveSans',
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Text(
-                                                      '${movie.releaseDate.year}',
-                                                      style: const TextStyle(
-                                                        color: AppColors.hint,
-                                                        fontSize: 12,
-                                                        fontFamily:
-                                                            'InclusiveSans',
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 2),
-                                                    Row(
-                                                      children: [
-                                                        const Icon(
-                                                          Icons.star,
-                                                          color: Colors.amber,
-                                                          size: 13,
-                                                        ),
-                                                        const SizedBox(
-                                                          width: 3,
-                                                        ),
-                                                        Text(
-                                                          movie.voteAverage
-                                                              .toStringAsFixed(
-                                                                1,
-                                                              ),
-                                                          style: const TextStyle(
-                                                            color:
-                                                                AppColors.hint,
-                                                            fontSize: 12,
-                                                            fontFamily:
-                                                                'InclusiveSans',
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      }).toList(),
+                                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                                    child: GridView.builder(
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        crossAxisSpacing: 12,
+                                        mainAxisSpacing: 12,
+                                        childAspectRatio: 0.62,
+                                      ),
+                                      itemCount: mp.searchResults.length,
+                                      itemBuilder: (context, index) {
+                                        return MovieCard(movie: mp.searchResults[index]);
+                                      },
                                     ),
                                   );
                                 },
@@ -504,9 +436,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ],
                             // ── Espacio final para que el contenido no
-                            // quede tapado detrás de la navbar flotante,
-                            // usando el mismo espaciado que entre reviews ──
-                            const SizedBox(height: 10),
+                            // quede tapado detrás de la navbar flotante ──
+                            const SizedBox(height: 110),
                           ],
                         ),
                       ),
@@ -612,7 +543,6 @@ class _HomeScreenState extends State<HomeScreen> {
 class _AutoWideCarousel extends StatefulWidget {
   final List<dynamic> movies;
   final double height;
-
   const _AutoWideCarousel({required this.movies, required this.height});
 
   @override
@@ -647,10 +577,15 @@ class _AutoWideCarouselState extends State<_AutoWideCarousel> {
     });
   }
 
+  // Pausa el timer sin cancelarlo definitivamente
+  void _pauseAutoPlay() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
   @override
   void didUpdateWidget(covariant _AutoWideCarousel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // si cambia la lista (ej. filtro de búsqueda), reinicia el autoplay
     if (oldWidget.movies.length != widget.movies.length) {
       _currentPage = 0;
       _startAutoPlay();
@@ -666,33 +601,78 @@ class _AutoWideCarouselState extends State<_AutoWideCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.movies.isEmpty) {
-      return SizedBox(height: widget.height);
-    }
+    if (widget.movies.isEmpty) return SizedBox(height: widget.height);
 
-    return SizedBox(
-      height: widget.height,
-      child: NotificationListener<ScrollNotification>(
-        onNotification: (notification) {
-          if (notification is UserScrollNotification) {
-            _startAutoPlay();
-          }
-          return false;
-        },
-        child: PageView.builder(
-          controller: _pageController,
-          itemCount: widget.movies.length,
-          onPageChanged: (index) => _currentPage = index,
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: _horizontalPadding,
-              ),
-              child: Center(child: WideMovieCard(movie: widget.movies[index])),
-            );
-          },
+    return Column(
+      children: [
+        // ── Carrusel principal ──────────────────────────────────
+        SizedBox(
+          height: widget.height,
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              if (notification is UserScrollNotification) _startAutoPlay();
+              return false;
+            },
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: widget.movies.length,
+              onPageChanged: (index) {
+                // setState aquí para que los dots se actualicen
+                // cada vez que cambia la página (manual o automático)
+                setState(() => _currentPage = index);
+              },
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: _horizontalPadding,
+                  ),
+                  child: Center(
+                    child: WideMovieCard(
+                      movie: widget.movies[index],
+                      // Al abrir "Ver más" pausa el carrusel
+                      onShowDescription: _pauseAutoPlay,
+                      // Al cerrar lo reanuda desde donde iba
+                      onHideDescription: _startAutoPlay,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         ),
-      ),
+
+        // ── Dots indicadores ────────────────────────────────────
+        // Mostramos máximo 5 dots aunque haya más películas,
+        // para que no se vean demasiados y luzca limpio.
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            widget.movies.length.clamp(0, 5),
+            (index) {
+              final isActive = index == (_currentPage % 5);
+              return AnimatedContainer(
+                // AnimatedContainer hace la transición suave de
+                // tamaño y color al cambiar de página, sin necesitar
+                // ninguna animación manual extra.
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: isActive ? 24 : 8,   // el activo es más ancho
+                height: 8,
+                decoration: BoxDecoration(
+                  // el activo es blanco brillante, los demás grises
+                  color: isActive
+                      ? Colors.white
+                      : Colors.white.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+      ],
     );
   }
 }
