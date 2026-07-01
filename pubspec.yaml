@@ -36,6 +36,10 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  assets:
+    - assets/images/
+    - .env
+
   fonts:
     - family: Montserrat
       fonts:
