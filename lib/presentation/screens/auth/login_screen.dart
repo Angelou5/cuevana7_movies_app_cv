@@ -76,6 +76,38 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // Función lista para conectar con la API
+  Future<void> _onGoogleSignInPressed() async {
+    // 1. Actualizamos el UI para mostrar estado de carga
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // TODO (Backend): Aquí va la lógica de GoogleSignIn y la llamada a tu API.
+      // Ejemplo de lo que hará el backend:
+      // final googleUser = await GoogleSignIn().signIn();
+      // final apiResponse = await authRepository.loginWithGoogle(googleUser.token);
+      
+      // Simulación de delay para que puedas ver y probar el comportamiento en el frontend
+      await Future.delayed(const Duration(seconds: 2));
+      
+      // Si todo sale bien, haces la navegación:
+      // context.go('/home');
+
+    } catch (e) {
+      // TODO (Backend): Manejo de errores (mostrar un SnackBar, dialog, etc.)
+      debugPrint('Error en login con Google: $e');
+    } finally {
+      // 2. Restauramos el estado si la operación terminó o falló
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+  
   Future<void> _authenticateWithFingerprint() async {
     final auth = context.read<AuthProvider>();
     if (auth.isAuthenticated) {
@@ -275,6 +307,59 @@ class _LoginScreenState extends State<LoginScreen> {
                         label: 'Registrarse',
                         isLoading: false,
                         onPressed: () => context.push('/register'),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // --- SECCIÓN: Divisor "ó" ---
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Divider(
+                              color: Colors.grey.shade600,
+                              thickness: 1,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Text(
+                              'ó',
+                              style: TextStyle(
+                                color: Colors.grey.shade400,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Divider(
+                              color: Colors.grey.shade600,
+                              thickness: 1,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // --- SECCIÓN: Botón de Google ---
+                      // Nota: Si tu widget 'PrimaryButton' ya soporta íconos, puedes usarlo. 
+                      // Si no, este ElevatedButton imita tu estilo visual.
+                      PrimaryButton(
+                        label: 'Iniciar con Google',
+                        isLoading: _isLoading,
+                        onPressed: _isLoading ? null : _onGoogleSignInPressed,
+                        icon: Container(
+                          //decoration: const BoxDecoration(
+                            //color: Colors.white,
+                            //shape: BoxShape.circle,
+                          //),
+                          padding: const EdgeInsets.all(6), // Espaciado interno para el círculo blanco
+                          child: Image.asset(
+                            'assets/images/google.png',
+                            height: 16, // Tu asset con la altura que definiste
+                          ),
+                        ),
                       ),
 
                       const SizedBox(height: 80),
