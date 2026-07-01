@@ -127,9 +127,34 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // [TAREA: Espaciado correcto del ícono mostrar/ocultar] — constraints
+  // fijas y padding cero en el IconButton, más un margen derecho explícito
+  // para que quede a la misma distancia del borde que el texto lo está
+  // del borde izquierdo (contentPadding horizontal de AppTextField)
+  Widget _visibilityToggle({
+    required bool obscure,
+    required VoidCallback onToggle,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 20),
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+        splashRadius: 20,
+        icon: Icon(
+          obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+          color: AppColors.hint,
+          size: 22,
+        ),
+        onPressed: onToggle,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -144,134 +169,143 @@ class _LoginScreenState extends State<LoginScreen> {
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Form(
-              key: _formKey,
-              autovalidateMode: _autovalidateMode,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 12),
+            child: Center(
+              // [TAREA: Responsividad] — limita el ancho máximo en
+              // pantallas grandes (tablets/desktop)
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: Form(
+                  key: _formKey,
+                  autovalidateMode: _autovalidateMode,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 12),
 
-                  // Logo + "Cuevanita" del widget
-                  AppLogo(logoSize: 62, textColor: AppColors.white),
+                      // Logo + "Cuevanita" del widget
+                      AppLogo(logoSize: 62, textColor: AppColors.white),
 
-                  const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-                  // Título
-                  const Text(
-                    'Inicio de sesión',
-                    style: AppStyles.title,
-                    textAlign: TextAlign.center,
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // Campo correo
-                  AppTextField(
-                    controller: _emailCtrl,
-                    hint: 'Correo electrónico',
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (v) {
-                      if (v == null || v.isEmpty)
-                        return 'El correo es obligatorio';
-                      if (!v.contains('@'))
-                        return 'Escribe un correo válido, falta el @';
-                      if (!v.contains('.'))
-                        return 'Escribe un correo válido, falta el dominio';
-                      return null;
-                    },
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Campo contraseña
-                  AppTextField(
-                    controller: _passwordCtrl,
-                    hint: 'Contraseña',
-                    obscureText: _obscurePassword,
-                    validator: (v) {
-                      if (v == null || v.isEmpty)
-                        return 'La contraseña es obligatoria';
-                      if (v.length < 6)
-                        return 'La contraseña debe tener al menos 6 caracteres';
-                      return null;
-                    },
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                        color: AppColors.hint,
+                      // Título
+                      const Text(
+                        'Inicio de sesión',
+                        style: AppStyles.title,
+                        textAlign: TextAlign.center,
                       ),
-                      onPressed: () =>
-                          setState(() => _obscurePassword = !_obscurePassword),
-                    ),
-                  ),
 
-                  const SizedBox(height: 10),
+                      const SizedBox(height: 32),
 
-                  // Olvidaste contraseña
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: TextButton(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      // Campo correo
+                      AppTextField(
+                        controller: _emailCtrl,
+                        hint: 'Correo electrónico',
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return 'El correo es obligatorio';
+                          }
+                          if (!v.contains('@')) {
+                            return 'Escribe un correo válido, falta el @';
+                          }
+                          if (!v.contains('.')) {
+                            return 'Escribe un correo válido, falta el dominio';
+                          }
+                          return null;
+                        },
                       ),
-                      child: const Text(
-                        '¿Olvidaste la contraseña?',
-                        style: AppStyles.forgotPassword,
-                      ),
-                    ),
-                  ),
 
-                  const SizedBox(height: 32),
+                      const SizedBox(height: 16),
 
-                  // Botón iniciar sesión
-                  PrimaryButton(
-                    label: 'Iniciar sesión',
-                    isLoading: _isLoading,
-                    onPressed: _isLoading ? null : _onLoginPressed,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Botón registrarse
-                  PrimaryButton(
-                    label: 'Registrarse',
-                    isLoading: false,
-                    onPressed: () => context.push('/register'),
-                  ),
-
-                  const SizedBox(height: 80),
-
-                  // Huella dactilar
-                  Center(
-                    child: GestureDetector(
-                      onTap: _authenticateWithFingerprint,
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.profileCircle,
-                          border: Border.all(
-                            color: AppColors.divider,
-                            width: 3,
+                      // Campo contraseña
+                      AppTextField(
+                        controller: _passwordCtrl,
+                        hint: 'Contraseña',
+                        obscureText: _obscurePassword,
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return 'La contraseña es obligatoria';
+                          }
+                          if (v.length < 6) {
+                            return 'La contraseña debe tener al menos 6 caracteres';
+                          }
+                          return null;
+                        },
+                        // [TAREA: Espaciado correcto del ícono mostrar/ocultar]
+                        suffixIcon: _visibilityToggle(
+                          obscure: _obscurePassword,
+                          onToggle: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
                           ),
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Image.asset('assets/images/huella.png'),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      // Olvidaste contraseña
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton(
+                          onPressed: () {},
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text(
+                            '¿Olvidaste la contraseña?',
+                            style: AppStyles.forgotPassword,
+                          ),
                         ),
                       ),
-                    ),
-                  ),
 
-                  const SizedBox(height: 48),
-                ],
+                      const SizedBox(height: 32),
+
+                      // Botón iniciar sesión
+                      PrimaryButton(
+                        label: 'Iniciar sesión',
+                        isLoading: _isLoading,
+                        onPressed: _isLoading ? null : _onLoginPressed,
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Botón registrarse
+                      PrimaryButton(
+                        label: 'Registrarse',
+                        isLoading: false,
+                        onPressed: () => context.push('/register'),
+                      ),
+
+                      const SizedBox(height: 80),
+
+                      // Huella dactilar
+                      Center(
+                        child: GestureDetector(
+                          onTap: _authenticateWithFingerprint,
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.profileCircle,
+                              border: Border.all(
+                                color: AppColors.divider,
+                                width: 3,
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Image.asset('assets/images/huella.png'),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 48),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),

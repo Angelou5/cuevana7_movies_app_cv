@@ -6,6 +6,8 @@ import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_nav_bar.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/profile_menu_item.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/logout_dialog.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/search_bar_widget.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_fade_mask.dart';
 
 class LikedScreen extends StatefulWidget {
   static const String name = 'movies';
@@ -17,7 +19,6 @@ class LikedScreen extends StatefulWidget {
 
 class _LikedScreenState extends State<LikedScreen> {
   final TextEditingController _searchController = TextEditingController();
-  // [TAREA: Menú desplegable de perfil] — controla visibilidad del dropdown
   bool _showProfileMenu = false;
 
   @override
@@ -26,7 +27,12 @@ class _LikedScreenState extends State<LikedScreen> {
     super.dispose();
   }
 
-  // [TAREA: Menú desplegable de perfil] — dialog de confirmación al cerrar sesión
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() {});
+    FocusScope.of(context).unfocus();
+  }
+
   void _showLogoutDialog() {
     showDialog(
       context: context,
@@ -44,6 +50,7 @@ class _LikedScreenState extends State<LikedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: Stack(
         children: [
           Container(
@@ -60,7 +67,6 @@ class _LikedScreenState extends State<LikedScreen> {
             child: SafeArea(
               child: Column(
                 children: [
-                  // ── Buscador + Avatar ────────────────────────
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
@@ -69,44 +75,13 @@ class _LikedScreenState extends State<LikedScreen> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: Container(
-                            height: 64,
-                            decoration: BoxDecoration(
-                              color: AppColors.inputFill,
-                              borderRadius: BorderRadius.circular(45),
-                            ),
-                            child: TextField(
-                              controller: _searchController,
-                              style: const TextStyle(
-                                color: AppColors.white,
-                                fontSize: 16,
-                                fontFamily: 'InclusiveSans',
-                              ),
-                              decoration: const InputDecoration(
-                                hintText: 'Buscar',
-                                hintStyle: TextStyle(
-                                  color: AppColors.hint,
-                                  fontSize: 24,
-                                  fontFamily: 'InclusiveSans',
-                                ),
-                                prefixIcon: Icon(
-                                  Icons.search,
-                                  color: AppColors.hint,
-                                  size: 22,
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(
-                                  vertical: 20,
-                                ),
-                              ),
-                              onTapOutside: (_) {
-                                FocusScope.of(context).unfocus();
-                              },
-                            ),
+                          child: SearchBarWidget(
+                            controller: _searchController,
+                            onChanged: (value) => setState(() {}),
+                            onClear: _clearSearch,
                           ),
                         ),
                         const SizedBox(width: 12),
-                        // [TAREA: Menú desplegable de perfil] — avatar que abre el dropdown
                         GestureDetector(
                           onTap: () => setState(
                             () => _showProfileMenu = !_showProfileMenu,
@@ -129,35 +104,29 @@ class _LikedScreenState extends State<LikedScreen> {
                     ),
                   ),
                   Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-
-                      // ── Contenido futuro aquí ──────────────────────────
-                    ],
+                    child: BottomFadeMask(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // ── Contenido futuro aquí ──────────────────────────
+                            const SizedBox(height: 140),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-
-              // ── Navbar flotante ──────────────────────────────────────────
-              BottomNavBar(
-                activeTab: NavTab.movies,
-                isVisible: true,
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
 
-          // [TAREA: Menú desplegable de perfil] — tap fuera cierra el dropdown
           if (_showProfileMenu)
             GestureDetector(
               onTap: () => setState(() => _showProfileMenu = false),
               child: Container(color: Colors.transparent),
             ),
 
-          // [TAREA: Menú desplegable de perfil] — panel del dropdown posicionado bajo el avatar
           if (_showProfileMenu)
             Positioned(
               top: MediaQuery.of(context).padding.top + 88,
@@ -165,8 +134,6 @@ class _LikedScreenState extends State<LikedScreen> {
               child: Material(
                 color: Colors.transparent,
                 child: Container(
-                  // [TAREA: Fix overflow] — ancho aumentado de 260 a 290 para que
-                  // "Lista de reproducción" no desborde
                   width: 290,
                   decoration: BoxDecoration(
                     color: const Color(0xFF2C2C2E),
@@ -229,6 +196,17 @@ class _LikedScreenState extends State<LikedScreen> {
                 ),
               ),
             ),
+
+          // ── Navbar flotante sobre el contenido ─────────────────
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SafeArea(
+              top: false,
+              child: BottomNavBar(activeTab: NavTab.movies, isVisible: true),
+            ),
+          ),
         ],
       ),
     );
