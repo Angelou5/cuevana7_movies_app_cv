@@ -97,4 +97,53 @@ class UsersController {
       );
     }
   }
+
+  //Handler para Inicio de Sesión con Google
+  // Handler para Inicio de Sesión con Google
+  Future<Response> handleGoogleSignIn(Request request) async {
+    try {
+      final payload = await request.readAsString();
+      final body = jsonDecode(payload) as Map<String, dynamic>;
+
+      // Esperamos un JSON en el body que traiga {'idToken': '...'}
+      if (body['idToken'] == null) {
+        return Response.badRequest(
+          body: jsonEncode({'error': 'El campo idToken es requerido'}),
+          headers: {'content-type': 'application/json'},
+        );
+      }
+
+      // Invocamos la lógica que acabamos de poner en el repositorio
+      final user = await userRepository.signInWithGoogle(body['idToken']);
+
+      // Usamos tu mismo método para firmar el token JWT de tu servidor
+      final token = GenerarJWT(user);
+
+      return Response.ok(
+        jsonEncode({
+          'message': 'Login con Google exitoso',
+          'user': {
+            'id': user.id,
+            'name': user.name,
+            'email': user.email,
+            'rol': user.rol.name,
+          },
+          'token': token, // Tu JWT seguro de vuelta a la app móvil
+        }),
+        headers: {'content-type': 'application/json'},
+      );
+    } catch (e) {
+      print('==== ERROR DETONADO EN GOOGLE SIGNIN ====');
+      print(e);
+      
+      return Response(
+        401,
+        body: jsonEncode({
+          'error': 'Autenticación con Google fallida',
+          'detalle_real': e.toString(),
+        }),
+        headers: {'content-type': 'application/json'},
+      );
+    }
+  }
 }

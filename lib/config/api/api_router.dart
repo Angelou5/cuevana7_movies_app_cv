@@ -12,6 +12,7 @@ class ApiRouter {
     final router = Router();
 
     // Endpoints del servidor usando Shelf
+    router.post('/auth/google', usersController.handleGoogleSignIn);
     router.post('/signup', usersController.handleSignUp);
     router.post('/signin', usersController.handleSignIn);
     router.get('/prueba', (Request request) {
