@@ -111,7 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       // 5. Le pegamos a TU backend de Shelf
-      final url = Uri.parse('https://pixonsite.org/config/api/auth/google');
+      final url = Uri.parse('https://pixonsite.org/auth/google');
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -121,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (!mounted) return;
-
+      print('Respuesta del servidor: ${response.statusCode} - ${response.body}');
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final String token = data['token']; // El JWT que firmó tu Shelf server
@@ -139,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
         context.go('/');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error al validar tu cuenta de Google con el servidor')),
+          SnackBar(content: Text('Error al validar tu cuenta de Google con el servidor $response.statusCode')),
         );
       }
 
