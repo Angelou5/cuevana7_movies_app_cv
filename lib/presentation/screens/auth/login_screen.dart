@@ -78,7 +78,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // Función lista para conectar con la API
   Future<void> _onGoogleSignInPressed() async {
-    // 1. Actualizamos el UI para mostrar estado de carga
     setState(() {
       _isLoading = true;
     });
@@ -96,7 +95,6 @@ class _LoginScreenState extends State<LoginScreen> {
       // context.go('/home');
 
     } catch (e) {
-      // TODO (Backend): Manejo de errores (mostrar un SnackBar, dialog, etc.)
       debugPrint('Error en login con Google: $e');
     } finally {
       // 2. Restauramos el estado si la operación terminó o falló
