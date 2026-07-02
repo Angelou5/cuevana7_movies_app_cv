@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 import 'package:cuevana7_movies_app_cv/resources/styles/styles.dart';
@@ -83,21 +84,72 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // TODO (Backend): Aquí va la lógica de GoogleSignIn y la llamada a tu API.
-      // Ejemplo de lo que hará el backend:
-      // final googleUser = await GoogleSignIn().signIn();
-      // final apiResponse = await authRepository.loginWithGoogle(googleUser.token);
+      // 1. Usar la instancia Singleton (Nuevo estándar de google_sign_in 7.0+)
+     // 1. Usar la instancia Singleton (Nuevo estándar)
+      final googleSignIn = GoogleSignIn.instance;
+
+      // 2. Inicializar el SDK de Google SOLO con tu clave
+      await googleSignIn.initialize(
+        serverClientId: '122965167698-gmeepqqqvocvlis9cjq2fmcdl5p2ogha.apps.googleusercontent.com',
+      );
+
+      // 3. Invocar la ventana nativa
+      final googleUser = await googleSignIn.authenticate();
       
-      // Simulación de delay para que puedas ver y probar el comportamiento en el frontend
-      await Future.delayed(const Duration(seconds: 2));
-      
-      // Si todo sale bien, haces la navegación:
-      // context.go('/home');
+      // Si el usuario le da para atrás o cancela la ventanita flotante
+      if (googleUser == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // 4. Extraemos los datos de autenticación de Google
+      final googleAuth = await googleUser.authentication;
+      final String? idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        throw Exception('No se pudo generar el ID Token de Google');
+      }
+
+      // 5. Le pegamos a TU backend de Shelf
+      final url = Uri.parse('https://pixonsite.org/config/api/auth/google');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'idToken': idToken,
+        }),
+      );
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final String token = data['token']; // El JWT que firmó tu Shelf server
+
+        // 6. Guardamos el token en tu AuthProvider para mantener al usuario autenticado
+        await context.read<AuthProvider>().setToken(token);
+
+        // Opcional por si usas persistencia rápida para la huella dactilar
+        const storage = FlutterSecureStorage();
+        await storage.write(key: 'saved_email', value: googleUser.email);
+
+        if (!mounted) return;
+        
+        // 7. ¡Vámonos al Home! 🎉
+        context.go('/');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al validar tu cuenta de Google con el servidor')),
+        );
+      }
 
     } catch (e) {
       debugPrint('Error en login con Google: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error de conexión o cancelación: $e')),
+      );
     } finally {
-      // 2. Restauramos el estado si la operación terminó o falló
       if (mounted) {
         setState(() {
           _isLoading = false;
