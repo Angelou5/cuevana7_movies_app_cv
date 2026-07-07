@@ -4,6 +4,7 @@ import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 import 'package:cuevana7_movies_app_cv/resources/styles/styles.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/app_text_field.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/primary_button.dart';
+import 'package:cuevana7_movies_app_cv/shared/validators.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -33,9 +34,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   static final RegExp _nameFirstUpper = RegExp(r'^[A-ZÁÉÍÓÚÑ]');
   static final RegExp _nameRestLower = RegExp(r'^.[a-záéíóúñ]*$');
   static final RegExp _hasNumber = RegExp(r'\d');
-  static final RegExp _emailDomainValido = RegExp(
-    r'^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$',
-  );
   static final RegExp _hasUpper = RegExp(r'[A-Z]');
   static final RegExp _hasLower = RegExp(r'[a-z]');
   static final RegExp _hasSpecial = RegExp(r'[-!@#$%^&*(),.?":{}|<>_]');
@@ -80,14 +78,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return null;
   }
 
-  String? _validateEmailField(String? v) {
-    if (v == null || v.isEmpty) return 'El correo es obligatorio';
-    if (!v.contains('@')) return 'Escribe un correo válido, falta el @';
-    if (!_emailDomainValido.hasMatch(v)) {
-      return 'Escribe un correo válido, falta un dominio (ej. .com)';
-    }
-    return null;
-  }
+  String? _validateEmailField(String? v) => validateEmail(v);
 
   String? _validatePasswordField(String? v) {
     if (v == null || v.isEmpty) return 'La contraseña es obligatoria';
@@ -218,16 +209,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Widget _emailChecklist(String value) {
     if (value.isEmpty) return const SizedBox.shrink();
-    final hasAt = value.contains('@');
-    final hasValidDomain = _emailDomainValido.hasMatch(value);
+    final checks = emailChecks(value);
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _requirement('Contiene @', hasAt),
-          _requirement('Dominio válido (ej. .com, .mx)', hasValidDomain),
-        ],
+        children: checks.map((c) => _requirement(c.label, c.satisfied)).toList(),
       ),
     );
   }

@@ -12,6 +12,7 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart';
+import 'package:cuevana7_movies_app_cv/shared/validators.dart';
 
 class LoginScreen extends StatefulWidget {
   static const name = 'login-screen';
@@ -136,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (!mounted) return;
         
         // 7. ¡Vámonos al Home! 🎉
-        context.go('/');
+        context.go('/');  
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al validar tu cuenta de Google con el servidor $response.statusCode')),
@@ -283,18 +284,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _emailCtrl,
                         hint: 'Correo electrónico',
                         keyboardType: TextInputType.emailAddress,
-                        validator: (v) {
-                          if (v == null || v.isEmpty) {
-                            return 'El correo es obligatorio';
-                          }
-                          if (!v.contains('@')) {
-                            return 'Escribe un correo válido, falta el @';
-                          }
-                          if (!v.contains('.')) {
-                            return 'Escribe un correo válido, falta el dominio';
-                          }
-                          return null;
-                        },
+                        validator: (v) => validateEmail(v),
                       ),
 
                       const SizedBox(height: 16),
