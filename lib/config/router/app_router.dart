@@ -8,6 +8,8 @@ import 'package:cuevana7_movies_app_cv/presentation/screens/auth/splash_screen.d
 import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart';
 import 'package:cuevana7_movies_app_cv/presentation/screens/movies/favorite_screen.dart';
 import 'package:cuevana7_movies_app_cv/presentation/screens/movies/liked_screen.dart';
+import 'package:cuevana7_movies_app_cv/domain/entities/movie.dart';
+import 'package:cuevana7_movies_app_cv/presentation/screens/movies/movie_detail_screen.dart';
 
 // 👇 Helper para que cada ruta transicione con un fade en vez del
 // deslizamiento/blanco por defecto de MaterialPage. Así nunca se
@@ -31,6 +33,14 @@ final appRouter = GoRouter(
       path: '/splash',
       name: SplashScreen.name,
       pageBuilder: (context, state) => _fadePage(const SplashScreen(), state),
+    ),
+    GoRoute(
+      path: '/movie/:id',
+      name: MovieDetailScreen.name,
+      pageBuilder: (context, state) {
+        final movie = state.extra as Movie;
+        return _fadePage(MovieDetailScreen(movie: movie), state);
+      },
     ),
     GoRoute(
       path: '/login',
