@@ -11,6 +11,7 @@ import 'package:cuevana7_movies_app_cv/presentation/widgets/review_card.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_nav_bar.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/search_bar_widget.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_fade_mask.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/error_view.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String name = 'home';
@@ -339,14 +340,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                       )
                                     : movieProvider.error != null &&
                                           movieProvider.movies.isEmpty
-                                    ? Center(
-                                        child: Text(
-                                          '${movieProvider.error}',
-                                          style: const TextStyle(
-                                            color: AppColors.hint,
-                                            fontFamily: 'InclusiveSans',
-                                          ),
-                                        ),
+                                    ? ErrorView(
+                                        error: movieProvider.error!,
+                                        onRetry: () => context
+                                            .read<MovieProvider>()
+                                            .loadNowPlaying(),
                                       )
                                     : ListView.separated(
                                         padding: const EdgeInsets.symmetric(

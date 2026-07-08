@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/movie.dart';
 import '../../domain/entities/review.dart';
 import '../../domain/repository/movies_repository.dart';
+import '../../shared/http_utils.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -28,7 +29,7 @@ class MovieProvider extends ChangeNotifier {
   Timer? _debounce;
 
   bool isLoading = false;
-  String? error;
+  RequestError? error;
   int currentPage = 1;
 
   final Map<int, Movie> _favorites = {};
@@ -125,7 +126,7 @@ class MovieProvider extends ChangeNotifier {
       await _loadAllReviews();
       await loadGenreMovies();
     } catch (e) {
-      error = e.toString();
+      error = classifyError(e);
       movies = [];
     }
     isLoading = false;
@@ -141,7 +142,7 @@ class MovieProvider extends ChangeNotifier {
       movies.addAll(newMovies);
       await _loadAllReviews();
     } catch (e) {
-      error = e.toString();
+      error = classifyError(e);
     }
     isLoading = false;
     notifyListeners();

@@ -13,6 +13,8 @@ import 'package:cuevana7_movies_app_cv/presentation/widgets/app_snackbar.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_fade_mask.dart';
 import 'package:cuevana7_movies_app_cv/domain/entities/actor.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/cast_carousel.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/error_view.dart';
+import 'package:cuevana7_movies_app_cv/shared/http_utils.dart';
 
 class MovieDetailScreen extends StatefulWidget {
   static const String name = 'movie-detail';
@@ -94,6 +96,14 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                   FutureBuilder<List<Actor>>(
                     future: _castFuture,
                     builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return SizedBox(
+                          height: 170,
+                          child: ErrorView(
+                            error: classifyError(snapshot.error!),
+                          ),
+                        );
+                      }
                       if (!snapshot.hasData) {
                         return const SizedBox(
                           height: 170,
@@ -151,6 +161,11 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                     child: FutureBuilder<List<Movie>>(
                       future: _similarFuture,
                       builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return ErrorView(
+                            error: classifyError(snapshot.error!),
+                          );
+                        }
                         final similar = snapshot.data ?? [];
                         if (!snapshot.hasData) {
                           return const Center(
@@ -179,6 +194,17 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                     child: FutureBuilder<List<Review>>(
                       future: _reviewsFuture,
                       builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            child: ErrorView(
+                              error: RequestError(
+                                type: ErrorType.unknown,
+                                message: 'No se pudieron cargar las reseñas',
+                              ),
+                            ),
+                          );
+                        }
                         final reviews = snapshot.data ?? [];
                         if (!snapshot.hasData) {
                           return const Padding(

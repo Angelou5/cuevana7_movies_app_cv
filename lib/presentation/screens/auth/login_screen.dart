@@ -13,6 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart';
 import 'package:cuevana7_movies_app_cv/shared/validators.dart';
+import 'package:cuevana7_movies_app_cv/shared/http_utils.dart';
 
 class LoginScreen extends StatefulWidget {
   static const name = 'login-screen';
@@ -70,9 +71,10 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error de conexión: $e')));
+      final err = classifyError(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(err.message)),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -145,10 +147,10 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
     } catch (e) {
-      debugPrint('Error en login con Google: $e');
       if (!mounted) return;
+      final err = classifyError(e);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error de conexión o cancelación: $e')),
+        SnackBar(content: Text(err.message)),
       );
     } finally {
       if (mounted) {
@@ -202,9 +204,10 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error de conexión: $e')));
+      final err = classifyError(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(err.message)),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

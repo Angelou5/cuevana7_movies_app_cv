@@ -5,6 +5,7 @@ import 'package:cuevana7_movies_app_cv/resources/styles/styles.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/app_text_field.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/primary_button.dart';
 import 'package:cuevana7_movies_app_cv/shared/validators.dart';
+import 'package:cuevana7_movies_app_cv/shared/http_utils.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -126,9 +127,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error de conexión: $e')));
+      final err = classifyError(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(err.message)),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
