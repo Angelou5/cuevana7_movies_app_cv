@@ -1,10 +1,12 @@
 import '../../domain/datasources/movies_datasources.dart';
+import '../../domain/entities/actor.dart';
 import '../../domain/entities/movie.dart';
-import '../../domain/repository/movies_repository.dart';
 import '../../domain/entities/review.dart';
+import '../../domain/repository/movies_repository.dart';
 
 class MovieRepositoryImpl implements MovieRepositories {
   final MovieDatasources datasource;
+
   MovieRepositoryImpl(this.datasource);
 
   @override
@@ -25,5 +27,11 @@ class MovieRepositoryImpl implements MovieRepositories {
   @override
   Future<List<Movie>> searchMovies(String query) {
     return datasource.searchMovies(query);
+  }
+
+  // NUEVO
+  @override
+  Future<List<Actor>> getMovieCast(int movieId) {
+    return datasource.getMovieCast(movieId);
   }
 }

@@ -5,6 +5,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../../domain/datasources/movies_datasources.dart';
 import '../../domain/entities/movie.dart';
+import '../../domain/entities/actor.dart';
+import 'mappers/actor_mapper.dart';
 import 'mappers/movie_mapper.dart';
 
 class MovieDbDatasource implements MovieDatasources {
@@ -150,6 +152,29 @@ class MovieDbDatasource implements MovieDatasources {
     final data = jsonDecode(response.body);
     return (data['results'] as List)
         .map((j) => MovieMapper.fromJson(j))
+        .toList();
+  }
+
+  @override
+  Future<List<Actor>> getMovieCast(int movieId) async {
+    final url = Uri.parse('$_baseUrl/movie/$movieId/credits?language=es-MX');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $_token',
+        'accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Error cargando reparto: ${response.statusCode}');
+    }
+
+    final data = jsonDecode(response.body);
+
+    return (data['cast'] as List)
+        .map((actor) => ActorMapper.fromJson(actor))
         .toList();
   }
 }

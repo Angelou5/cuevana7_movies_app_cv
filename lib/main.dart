@@ -22,7 +22,15 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => MovieProvider(repository)),
+        ChangeNotifierProvider(
+          create: (_) {
+            final provider = MovieProvider(repository);
+
+            provider.loadFavorites();
+
+            return provider;
+          },
+        ),
       ],
       child: const MainApp(),
     ),

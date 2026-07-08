@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/movie.dart';
 import '../../domain/entities/review.dart';
 import '../../domain/repository/movies_repository.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MovieReview {
   final Review review;
@@ -29,7 +31,54 @@ class MovieProvider extends ChangeNotifier {
   String? error;
   int currentPage = 1;
 
+  final Map<int, Movie> _favorites = {};
+  static const String _favoritesKey = 'favorite_movies';
+
+  List<Movie> get favoriteMovies => _favorites.values.toList();
+
+  bool isFavorite(int movieId) => _favorites.containsKey(movieId);
+
+  Future<void> toggleFavorite(Movie movie) async {
+    if (_favorites.containsKey(movie.id)) {
+      _favorites.remove(movie.id);
+    } else {
+      _favorites[movie.id] = movie;
+    }
+
+    await _saveFavorites();
+
+    notifyListeners();
+  }
+
   MovieProvider(this.repository);
+
+  Future<void> _saveFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final json = _favorites.values.map((movie) => movie.toJson()).toList();
+
+    await prefs.setString(_favoritesKey, jsonEncode(json));
+  }
+
+  Future<void> loadFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final jsonString = prefs.getString(_favoritesKey);
+
+    if (jsonString == null) return;
+
+    final List decoded = jsonDecode(jsonString);
+
+    _favorites.clear();
+
+    for (final movieJson in decoded) {
+      final movie = Movie.fromJson(movieJson);
+
+      _favorites[movie.id] = movie;
+    }
+
+    notifyListeners();
+  }
 
   // 👈 llamar desde onChanged del TextField
   void onSearchChanged(String query) {

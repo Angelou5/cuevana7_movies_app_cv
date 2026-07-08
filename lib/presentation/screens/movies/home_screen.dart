@@ -255,9 +255,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                       height: 300,
                                       child: Center(
                                         child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
-                                            Icon(Icons.search_off_rounded, color: AppColors.hint, size: 48),
+                                            Icon(
+                                              Icons.search_off_rounded,
+                                              color: AppColors.hint,
+                                              size: 48,
+                                            ),
                                             SizedBox(height: 12),
                                             Text(
                                               'Sin resultados',
@@ -273,19 +278,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                     );
                                   }
                                   return Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                    ),
                                     child: GridView.builder(
                                       shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 2,
-                                        crossAxisSpacing: 12,
-                                        mainAxisSpacing: 12,
-                                        childAspectRatio: 0.62,
-                                      ),
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      gridDelegate:
+                                          const SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 2,
+                                            crossAxisSpacing: 12,
+                                            mainAxisSpacing: 12,
+                                            childAspectRatio: 0.62,
+                                          ),
                                       itemCount: mp.searchResults.length,
                                       itemBuilder: (context, index) {
-                                        return MovieCard(movie: mp.searchResults[index]);
+                                        return MovieCard(
+                                          movie: mp.searchResults[index],
+                                        );
                                       },
                                     ),
                                   );
@@ -647,29 +658,24 @@ class _AutoWideCarouselState extends State<_AutoWideCarousel> {
         const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            widget.movies.length.clamp(0, 5),
-            (index) {
-              final isActive = index == (_currentPage % 5);
-              return AnimatedContainer(
-                // AnimatedContainer hace la transición suave de
-                // tamaño y color al cambiar de página, sin necesitar
-                // ninguna animación manual extra.
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                width: isActive ? 24 : 8,   // el activo es más ancho
-                height: 8,
-                decoration: BoxDecoration(
-                  // el activo es blanco brillante, los demás grises
-                  color: isActive
-                      ? Colors.white
-                      : Colors.white.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              );
-            },
-          ),
+          children: List.generate(widget.movies.length.clamp(0, 5), (index) {
+            final isActive = index == (_currentPage % 5);
+            return AnimatedContainer(
+              // AnimatedContainer hace la transición suave de
+              // tamaño y color al cambiar de página, sin necesitar
+              // ninguna animación manual extra.
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              width: isActive ? 24 : 8, // el activo es más ancho
+              height: 8,
+              decoration: BoxDecoration(
+                // el activo es blanco brillante, los demás grises
+                color: isActive ? Colors.white : Colors.white.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            );
+          }),
         ),
         const SizedBox(height: 8),
       ],
@@ -716,12 +722,12 @@ class _FadedGenreSection extends StatelessWidget {
               : ListView.separated(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   scrollDirection: Axis.horizontal,
-                  
+
                   // 1. Agregamos el +1 para hacerle espacio a la flecha
-                  itemCount: movies.length + 1, 
-                  
+                  itemCount: movies.length + 1,
+
                   separatorBuilder: (_, __) => const SizedBox(width: 10),
-                  
+
                   // 2. Expandimos el itemBuilder con la condición
                   itemBuilder: (context, index) {
                     if (index == movies.length) {
@@ -729,7 +735,7 @@ class _FadedGenreSection extends StatelessWidget {
                         child: GestureDetector(
                           onTap: () {
                             // Aquí puedes manejar la lógica en el futuro para cargar más películas de este género
-                            debugPrint('Cargar más películas de $title'); 
+                            debugPrint('Cargar más películas de $title');
                           },
                           child: const Icon(
                             Icons.chevron_right,
@@ -739,7 +745,7 @@ class _FadedGenreSection extends StatelessWidget {
                         ),
                       );
                     }
-                    
+
                     // Si no es el último índice, dibuja la película normal
                     return MovieCard(movie: movies[index]);
                   },

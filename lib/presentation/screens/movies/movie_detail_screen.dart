@@ -9,7 +9,10 @@ import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/movie_provider.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/movie_card.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/review_card.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/app_snackbar.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_fade_mask.dart';
+import 'package:cuevana7_movies_app_cv/domain/entities/actor.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/cast_carousel.dart';
 
 class MovieDetailScreen extends StatefulWidget {
   static const String name = 'movie-detail';
@@ -21,8 +24,11 @@ class MovieDetailScreen extends StatefulWidget {
 }
 
 class _MovieDetailScreenState extends State<MovieDetailScreen> {
+  static const double sectionSpacing = 28;
+
   late Future<List<Movie>> _similarFuture;
   late Future<List<Review>> _reviewsFuture;
+  late Future<List<Actor>> _castFuture;
 
   @override
   void initState() {
@@ -41,6 +47,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               .then((list) => list.where((m) => m.id != movie.id).toList());
 
     _reviewsFuture = repo.getMovieReviews(movie.id);
+    _castFuture = repo.getMovieCast(movie.id);
   }
 
   @override
@@ -68,7 +75,40 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _Header(movie: movie, rating: rating),
-                  const SizedBox(height: 24),
+
+                  const SizedBox(height: sectionSpacing),
+
+                  // ── Reparto ──────────────────────────────────
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
+                      'Reparto',
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontSize: 24,
+                        fontFamily: 'InclusiveSans',
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10), // Espacio entre título y carrusel
+                  FutureBuilder<List<Actor>>(
+                    future: _castFuture,
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const SizedBox(
+                          height: 170,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.white,
+                            ),
+                          ),
+                        );
+                      }
+
+                      return CastCarousel(cast: snapshot.data!);
+                    },
+                  ),
+                  const SizedBox(height: sectionSpacing),
 
                   // ── Géneros similares ──────────────────────────
                   Padding(
@@ -105,7 +145,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 10), // Espacio entre título y carrusel
                   SizedBox(
                     height: 190,
                     child: FutureBuilder<List<Movie>>(
@@ -131,7 +171,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: sectionSpacing),
 
                   // ── Reseñas de esta película ────────────────────
                   Padding(
@@ -198,8 +238,7 @@ class _HeaderState extends State<_Header> {
   static const int _overviewCollapsedThreshold = 140;
   static const double _backdropHeight = 460;
   static const double _panelOverlap = 80;
-  static const double _actionIconSize = 38;
-
+  static const double _actionIconSize = 44;
   @override
   Widget build(BuildContext context) {
     final movie = widget.movie;
@@ -382,10 +421,33 @@ class _HeaderState extends State<_Header> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              // TODO: conectar con lógica real de favoritos
-                              _ActionIcon(
-                                asset: 'assets/images/favorite.svg',
-                                semanticLabel: 'Agregar a favoritos',
+                              // Ícono de favorito conectado al MovieProvider:
+                              // cambia de asset (outline/relleno) según el
+                              // estado real guardado en el provider.
+                              Consumer<MovieProvider>(
+                                builder: (context, provider, _) {
+                                  final isFav = provider.isFavorite(movie.id);
+                                  return _ActionIcon(
+                                    asset: isFav
+                                        ? 'assets/images/favoritewhite.svg'
+                                        : 'assets/images/favorite.svg',
+                                    semanticLabel: isFav
+                                        ? 'Quitar de favoritos'
+                                        : 'Agregar a favoritos',
+                                    onTap: () {
+                                      final wasFavorite = provider.isFavorite(
+                                        movie.id,
+                                      );
+                                      provider.toggleFavorite(movie);
+                                      if (!wasFavorite) {
+                                        showSuccessSnackBar(
+                                          context,
+                                          'Se ha agregado exitosamente',
+                                        );
+                                      }
+                                    },
+                                  );
+                                },
                               ),
                               const SizedBox(width: 8),
                               // TODO: conectar con pantalla/sección de comentarios
@@ -414,42 +476,117 @@ class _HeaderState extends State<_Header> {
 /// Se envuelve en [AspectRatio] cuadrado para que su bounding box mida
 /// exactamente el alto real del botón "Reproducir trailer" cuando ambos
 /// están dentro de un [Row] con [CrossAxisAlignment.stretch] envuelto en
-/// [IntrinsicHeight]. Esto hace que los íconos "sigan" al botón en tamaño
-/// sin necesidad de fijar un alto a mano, y sin cambiar el estilo visual
-/// original (el SVG se sigue dibujando a [iconSize], solo centrado dentro
-/// de esa caja).
-/// También agrega [Semantics] para accesibilidad y una zona táctil real
-/// vía [GestureDetector], ya que un ícono suelto no era tappeable de forma
-/// consistente.
-class _ActionIcon extends StatelessWidget {
+/// [IntrinsicHeight].
+///
+/// IMPORTANTE: el [SvgPicture] fija [width]/[height] explícitos
+/// ([iconSize]). Antes no los tenía (solo `fit: BoxFit.contain`), y como
+/// `favorite.svg` (40x40) y `favoritewhite.svg` (64x64) declaran tamaños
+/// intrínsecos distintos, `IntrinsicHeight` recalculaba un alto de fila
+/// ligeramente distinto al cambiar de ícono — eso era lo que hacía que el
+/// botón "cambiara" de forma al tocar favorito. Con un tamaño fijo, el
+/// alto de la fila deja de depender del asset mostrado.
+///
+/// También agrega una animación al presionar (un pequeño "pop" hacia
+/// adentro con [AnimatedScale]) y una transición de fundido/escala con
+/// [AnimatedSwitcher] cuando cambia el asset (por ejemplo, al marcar o
+/// desmarcar favorito).
+class _ActionIcon extends StatefulWidget {
   final String asset;
   final String semanticLabel;
   final VoidCallback? onTap;
+  final double iconSize;
 
   const _ActionIcon({
     super.key,
     required this.asset,
     required this.semanticLabel,
     this.onTap,
+    this.iconSize = _HeaderState._actionIconSize,
   });
+
+  @override
+  State<_ActionIcon> createState() => _ActionIconState();
+}
+
+class _ActionIconState extends State<_ActionIcon>
+    with SingleTickerProviderStateMixin {
+  // Un AnimationController con un TweenSequence (1.0 → 0.75 → 1.0) es
+  // determinista: sin importar cuántos rebuilds dispare el provider al
+  // togglear favorito, el controller vive en este State y su animación
+  // siempre arranca en 1.0 y termina en 1.0. Esto reemplaza el enfoque
+  // anterior (un booleano `_pressed` + AnimatedScale), que dependía de que
+  // onTapUp/onTapCancel llegaran antes del rebuild — y a veces no, dejando
+  // el ícono "pegado" en su tamaño chico.
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 260),
+  );
+
+  late final Animation<double> _bounce = TweenSequence<double>([
+    TweenSequenceItem(
+      tween: Tween(
+        begin: 1.0,
+        end: 0.72,
+      ).chain(CurveTween(curve: Curves.easeOut)),
+      weight: 35,
+    ),
+    TweenSequenceItem(
+      tween: Tween(
+        begin: 0.72,
+        end: 1.0,
+      ).chain(CurveTween(curve: Curves.easeOutBack)),
+      weight: 65,
+    ),
+  ]).animate(_controller);
+
+  void _handleTap() {
+    _controller.forward(from: 0);
+    widget.onTap?.call();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 1,
       child: Semantics(
         button: true,
-        label: semanticLabel,
+        label: widget.semanticLabel,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: onTap,
+          onTap: _handleTap,
           child: Padding(
-            padding: const EdgeInsets.all(6),
-            child: SvgPicture.asset(
-              asset,
-              fit: BoxFit.contain,
-              colorFilter: const ColorFilter.mode(
-                AppColors.white,
-                BlendMode.srcIn,
+            padding: const EdgeInsets.all(3),
+            child: Center(
+              child: AnimatedBuilder(
+                animation: _bounce,
+                builder: (context, child) =>
+                    Transform.scale(scale: _bounce.value, child: child),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 220),
+                  switchInCurve: Curves.easeOutBack,
+                  switchOutCurve: Curves.easeIn,
+                  transitionBuilder: (child, animation) => ScaleTransition(
+                    scale: animation,
+                    child: FadeTransition(opacity: animation, child: child),
+                  ),
+                  child: SvgPicture.asset(
+                    widget.asset,
+                    key: ValueKey(widget.asset),
+                    width: widget.iconSize,
+                    height: widget.iconSize,
+                    fit: BoxFit.contain,
+                    colorFilter: const ColorFilter.mode(
+                      AppColors.white,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),

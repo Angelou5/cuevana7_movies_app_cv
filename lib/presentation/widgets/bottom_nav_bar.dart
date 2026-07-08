@@ -45,7 +45,7 @@ class BottomNavBar extends StatelessWidget {
                       : () => context.go('/'),
                 ),
                 _NavItem(
-                  iconPath: 'assets/images/icono_fav.svg',
+                  iconPath: 'assets/images/favorite.svg',
                   // [TAREA: Ícono blanco al estar activo]
                   activeIconPath: 'assets/images/favoritewhite.svg',
                   label: 'Guardados',
@@ -55,7 +55,7 @@ class BottomNavBar extends StatelessWidget {
                       : () => context.go('/favorites'),
                 ),
                 _NavItem(
-                  iconPath: 'assets/images/icono_peli.svg',
+                  iconPath: 'assets/images/movies.svg',
                   // [TAREA: Ícono blanco al estar activo]
                   activeIconPath: 'assets/images/moviewhite.svg',
                   label: 'Películas',
@@ -104,13 +104,14 @@ class _NavItem extends StatelessWidget {
           // [TAREA: Ícono blanco al estar activo] — usa el svg "white"
           // correspondiente en vez de tintar con colorFilter
           child: isActive
-              ? SvgPicture.asset(activeIconPath, width: 40, height: 40)
+              ? SvgPicture.asset(activeIconPath, width: 30, height: 30)
               : SvgPicture.asset(
                   iconPath,
-                  width: 40,
-                  height: 40,
-                  colorFilter: ColorFilter.mode(
-                    AppColors.hint,
+                  width: 30,
+                  height: 30,
+                  colorFilter: const ColorFilter.mode(
+                    AppColors
+                        .divider, // Color(0xFF6B6B6B) — gris sólido, ya lo tienes definido
                     BlendMode.srcIn,
                   ),
                 ),

@@ -1,8 +1,4 @@
-//Primera estructura de datos de nuestra aplicacion, la forma en que nosotros lo definimos
-//Esto es lo que utilizaremos, no lo que venga directamente de una API
-
-class Movie 
-{
+class Movie {
   final bool adult;
   final String backdropPath;
   final List<String> genreIds;
@@ -18,9 +14,7 @@ class Movie
   final double voteAverage;
   final int voteCount;
 
-  Movie
-  (
-    {
+  Movie({
     required this.adult,
     required this.backdropPath,
     required this.genreIds,
@@ -35,6 +29,43 @@ class Movie
     required this.video,
     required this.voteAverage,
     required this.voteCount,
-    }
-  );
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'adult': adult,
+      'backdropPath': backdropPath,
+      'genreIds': genreIds,
+      'id': id,
+      'originalLanguage': originalLanguage,
+      'originalTitle': originalTitle,
+      'overview': overview,
+      'popularity': popularity,
+      'posterPath': posterPath,
+      'releaseDate': releaseDate.toIso8601String(),
+      'title': title,
+      'video': video,
+      'voteAverage': voteAverage,
+      'voteCount': voteCount,
+    };
+  }
+
+  factory Movie.fromJson(Map<String, dynamic> json) {
+    return Movie(
+      adult: json['adult'],
+      backdropPath: json['backdropPath'],
+      genreIds: List<String>.from(json['genreIds']),
+      id: json['id'],
+      originalLanguage: json['originalLanguage'],
+      originalTitle: json['originalTitle'],
+      overview: json['overview'],
+      popularity: (json['popularity'] as num).toDouble(),
+      posterPath: json['posterPath'],
+      releaseDate: DateTime.parse(json['releaseDate']),
+      title: json['title'],
+      video: json['video'],
+      voteAverage: (json['voteAverage'] as num).toDouble(),
+      voteCount: json['voteCount'],
+    );
+  }
 }

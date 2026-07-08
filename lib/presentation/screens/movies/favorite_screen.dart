@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart';
+import 'package:cuevana7_movies_app_cv/presentation/providers/movie_provider.dart';
 import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_nav_bar.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/profile_menu_item.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/logout_dialog.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/search_bar_widget.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_fade_mask.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/movie_card.dart';
 
 class FavoriteScreen extends StatefulWidget {
   static const String name = 'favorites';
@@ -20,6 +22,14 @@ class FavoriteScreen extends StatefulWidget {
 class _FavoriteScreenState extends State<FavoriteScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool _showProfileMenu = false;
+
+  // Mismo estilo que usa HomeScreen para "Novedades", "Comedias", etc.
+  static const _sectionTitle = TextStyle(
+    color: AppColors.white,
+    fontSize: 24,
+    fontFamily: 'Montserrat',
+    fontWeight: FontWeight.w400,
+  );
 
   @override
   void dispose() {
@@ -102,27 +112,77 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                         ),
                       ],
                     ),
-                    
                   ),
                   const SizedBox(height: 24),
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 24),
-                                child: Text('Guardados'),
-                              ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24),
+                    child: Text('Guardados', style: _sectionTitle),
+                  ),
                   Expanded(
                     child: BottomFadeMask(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // ── Contenido futuro aquí ──────────────────────────
-                            const SizedBox(height: 140),
-                          ],
-                        ),
+                      child: Consumer<MovieProvider>(
+                        builder: (context, movieProvider, _) {
+                          final favorites = movieProvider.favoriteMovies;
+                          if (favorites.isEmpty) {
+                            return SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  SizedBox(height: 80),
+                                  Center(
+                                    child: Column(
+                                      children: [
+                                        Icon(
+                                          Icons.bookmark_border_rounded,
+                                          color: AppColors.hint,
+                                          size: 48,
+                                        ),
+                                        SizedBox(height: 12),
+                                        Text(
+                                          'Aún no tienes películas guardadas',
+                                          style: TextStyle(
+                                            color: AppColors.hint,
+                                            fontSize: 14,
+                                            fontFamily: 'InclusiveSans',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(height: 140),
+                                ],
+                              ),
+                            );
+                          }
+                          return SingleChildScrollView(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                24,
+                                16,
+                                24,
+                                140,
+                              ),
+                              child: GridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      crossAxisSpacing: 12,
+                                      mainAxisSpacing: 12,
+                                      childAspectRatio: 0.62,
+                                    ),
+                                itemCount: favorites.length,
+                                itemBuilder: (context, index) {
+                                  return MovieCard(movie: favorites[index]);
+                                },
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ),
-                  
                 ],
               ),
             ),
@@ -212,7 +272,6 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
             child: SafeArea(
               top: false,
               child: BottomNavBar(activeTab: NavTab.favorites, isVisible: true),
-              
             ),
           ),
         ],
