@@ -22,45 +22,43 @@ class AppTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 48, // 1. Aquí forzamos la altura exacta de 48px
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        obscureText: obscureText,
-        style: AppStyles.fieldText,
-        validator: validator,
-        textAlignVertical: TextAlignVertical.center, // Alinea el texto en medio del alto fijo
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: AppStyles.hintField,
-          filled: true,
-          fillColor: AppColors.inputFill,
-          suffixIcon: suffixIcon,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 0, // 2. Quitamos el padding vertical gigante para que quepa en los 48px
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(45), // píldora como Figma
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(45),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(45),
-            borderSide: const BorderSide(color: AppColors.white, width: 1.5),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(45),
-            borderSide: const BorderSide(color: AppColors.error),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(45),
-            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
-          ),
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      style: AppStyles.fieldText,
+      validator: validator,
+      textAlignVertical: TextAlignVertical.center,
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: AppStyles.hintField,
+        filled: true,
+        fillColor: AppColors.inputFill,
+        suffixIcon: suffixIcon,
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 24,
+          vertical: 12,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(45),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(45),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(45),
+          borderSide: const BorderSide(color: AppColors.white, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(45),
+          borderSide: const BorderSide(color: AppColors.error),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(45),
+          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
       ),
     );
