@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:cuevana7_movies_app_cv/domain/entities/review.dart';
 import 'package:http/http.dart' as http;
@@ -29,7 +30,7 @@ class MovieDbDatasource implements MovieDatasources {
         'Authorization': 'Bearer $_token',
         'accept': 'application/json',
       },
-    );
+    ).timeout(const Duration(seconds: 10));
 
     if (response.statusCode != 200) {
       throw Exception('Error al cargar pelis de TMDB: ${response.statusCode}');
@@ -57,7 +58,7 @@ class MovieDbDatasource implements MovieDatasources {
         'Authorization': 'Bearer $_token',
         'accept': 'application/json',
       },
-    );
+    ).timeout(const Duration(seconds: 10));
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -85,8 +86,8 @@ class MovieDbDatasource implements MovieDatasources {
     final urlEn = Uri.parse('$_baseUrl/movie/$movieId/reviews');
 
     final responses = await Future.wait([
-      http.get(urlEs, headers: headers),
-      http.get(urlEn, headers: headers),
+      http.get(urlEs, headers: headers).timeout(const Duration(seconds: 10)),
+      http.get(urlEn, headers: headers).timeout(const Duration(seconds: 10)),
     ]);
 
     final all = <Review>[];
@@ -124,7 +125,7 @@ class MovieDbDatasource implements MovieDatasources {
         'Authorization': 'Bearer $_token',
         'accept': 'application/json',
       },
-    );
+    ).timeout(const Duration(seconds: 10));
     if (response.statusCode != 200) {
       throw Exception('Error al cargar por género: ${response.statusCode}');
     }
@@ -145,7 +146,7 @@ class MovieDbDatasource implements MovieDatasources {
         'Authorization': 'Bearer $_token',
         'accept': 'application/json',
       },
-    );
+    ).timeout(const Duration(seconds: 10));
     if (response.statusCode != 200) {
       throw Exception('Error al buscar: ${response.statusCode}');
     }
@@ -165,7 +166,7 @@ class MovieDbDatasource implements MovieDatasources {
         'Authorization': 'Bearer $_token',
         'accept': 'application/json',
       },
-    );
+    ).timeout(const Duration(seconds: 10));
 
     if (response.statusCode != 200) {
       throw Exception('Error cargando reparto: ${response.statusCode}');

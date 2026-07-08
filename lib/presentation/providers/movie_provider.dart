@@ -29,8 +29,15 @@ class MovieProvider extends ChangeNotifier {
   Timer? _debounce;
 
   bool isLoading = false;
+  bool isLoadingGenre = false;
   RequestError? error;
   int currentPage = 1;
+
+  int _comediaPage = 1;
+  int _terrorPage = 1;
+  int _accionPage = 1;
+  int _suspensoPage = 1;
+  int _familiaPage = 1;
 
   final Map<int, Movie> _favorites = {};
   static const String _favoritesKey = 'favorite_movies';
@@ -81,14 +88,13 @@ class MovieProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 👈 llamar desde onChanged del TextField
+  String _lastQuery = '';
+
   void onSearchChanged(String query) {
     _debounce?.cancel();
-
-    // Limpiar espacios en blanco al inicio y al final de la consulta
     final cleanQuery = query.trim();
 
-    if (cleanQuery.isEmpty || cleanQuery.length < 3) {
+    if (cleanQuery.isEmpty) {
       searchResults = [];
       isSearching = false;
       notifyListeners();
@@ -97,11 +103,15 @@ class MovieProvider extends ChangeNotifier {
 
     isSearching = true;
     notifyListeners();
+    _lastQuery = cleanQuery;
 
     _debounce = Timer(const Duration(milliseconds: 400), () async {
       try {
-        searchResults = await repository.searchMovies(cleanQuery);
+        final results = await repository.searchMovies(cleanQuery);
+        if (cleanQuery != _lastQuery) return;
+        searchResults = results;
       } catch (_) {
+        if (cleanQuery != _lastQuery) return;
         searchResults = [];
       }
       isSearching = false;
@@ -118,13 +128,18 @@ class MovieProvider extends ChangeNotifier {
 
   Future<void> loadNowPlaying() async {
     currentPage = 1;
+    _comediaPage = 1;
+    _terrorPage = 1;
+    _accionPage = 1;
+    _suspensoPage = 1;
+    _familiaPage = 1;
     isLoading = true;
     error = null;
     notifyListeners();
     try {
       movies = await repository.getNowPlaying();
-      await _loadAllReviews();
-      await loadGenreMovies();
+      loadGenreMovies();
+      _loadAllReviews();
     } catch (e) {
       error = classifyError(e);
       movies = [];
@@ -140,7 +155,6 @@ class MovieProvider extends ChangeNotifier {
     try {
       final newMovies = await repository.getNowPlaying(page: currentPage);
       movies.addAll(newMovies);
-      await _loadAllReviews();
     } catch (e) {
       error = classifyError(e);
     }
@@ -148,13 +162,69 @@ class MovieProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> loadNextGenrePage(int genreId) async {
+    isLoadingGenre = true;
+    notifyListeners();
+    try {
+      int page;
+      switch (genreId) {
+        case 35:
+          page = ++_comediaPage;
+          break;
+        case 27:
+          page = ++_terrorPage;
+          break;
+        case 28:
+          page = ++_accionPage;
+          break;
+        case 53:
+          page = ++_suspensoPage;
+          break;
+        case 10751:
+          page = ++_familiaPage;
+          break;
+        default:
+          return;
+      }
+      final newMovies = await repository.getByGenre(genreId, page: page);
+      switch (genreId) {
+        case 35:
+          moviesComedia.addAll(newMovies);
+          break;
+        case 27:
+          moviesTerror.addAll(newMovies);
+          break;
+        case 28:
+          moviesAccion.addAll(newMovies);
+          break;
+        case 53:
+          moviesSuspenso.addAll(newMovies);
+          break;
+        case 10751:
+          moviesFamilia.addAll(newMovies);
+          break;
+      }
+    } catch (e) {
+      debugPrint('Error cargando más películas: $e');
+    }
+    isLoadingGenre = false;
+    notifyListeners();
+  }
+
   Future<void> loadGenreMovies() async {
     try {
-      moviesComedia = await repository.getByGenre(35);
-      moviesTerror = await repository.getByGenre(27);
-      moviesAccion = await repository.getByGenre(28);
-      moviesSuspenso = await repository.getByGenre(53);
-      moviesFamilia = await repository.getByGenre(10751);
+      final results = await Future.wait([
+        repository.getByGenre(35),
+        repository.getByGenre(27),
+        repository.getByGenre(28),
+        repository.getByGenre(53),
+        repository.getByGenre(10751),
+      ]);
+      moviesComedia = results[0];
+      moviesTerror = results[1];
+      moviesAccion = results[2];
+      moviesSuspenso = results[3];
+      moviesFamilia = results[4];
     } catch (e) {
       debugPrint('Error cargando géneros: $e');
     }
@@ -163,7 +233,7 @@ class MovieProvider extends ChangeNotifier {
 
   Future<void> _loadAllReviews() async {
     movieReviews = [];
-    for (final movie in movies.take(20)) {
+    final futures = movies.take(20).map((movie) async {
       try {
         final reviews = await repository.getMovieReviews(movie.id);
         for (final r in reviews) {
@@ -174,7 +244,8 @@ class MovieProvider extends ChangeNotifier {
       } catch (e) {
         debugPrint('Error loading reviews for ${movie.id}: $e');
       }
-    }
+    });
+    await Future.wait(futures);
     notifyListeners();
   }
 }

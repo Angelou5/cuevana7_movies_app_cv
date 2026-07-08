@@ -12,6 +12,7 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart';
+import 'package:cuevana7_movies_app_cv/presentation/providers/movie_provider.dart';
 import 'package:cuevana7_movies_app_cv/shared/validators.dart';
 import 'package:cuevana7_movies_app_cv/shared/http_utils.dart';
 
@@ -63,6 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
         await storage.write(key: 'saved_email', value: _emailCtrl.text.trim());
         await storage.write(key: 'saved_password', value: _passwordCtrl.text);
         if (!mounted) return;
+        context.read<MovieProvider>().loadNowPlaying();
         context.go('/');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -137,9 +139,8 @@ class _LoginScreenState extends State<LoginScreen> {
         await storage.write(key: 'saved_email', value: googleUser.email);
 
         if (!mounted) return;
-        
-        // 7. ¡Vámonos al Home! 🎉
-        context.go('/');  
+        context.read<MovieProvider>().loadNowPlaying();
+        context.go('/');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al validar tu cuenta de Google con el servidor $response.statusCode')),
@@ -194,6 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         await auth.setToken(data['token']);
+        context.read<MovieProvider>().loadNowPlaying();
         context.go('/');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

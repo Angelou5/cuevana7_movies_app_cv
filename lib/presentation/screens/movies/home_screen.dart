@@ -391,21 +391,33 @@ class _HomeScreenState extends State<HomeScreen> {
                               _FadedGenreSection(
                                 title: 'Comedias',
                                 movies: movieProvider.moviesComedia,
+                                onLoadMore: () =>
+                                    context.read<MovieProvider>().loadNextGenrePage(35),
+                                isLoading: movieProvider.isLoadingGenre,
                               ),
                               const SizedBox(height: 24),
                               _FadedGenreSection(
                                 title: 'Terror',
                                 movies: movieProvider.moviesTerror,
+                                onLoadMore: () =>
+                                    context.read<MovieProvider>().loadNextGenrePage(27),
+                                isLoading: movieProvider.isLoadingGenre,
                               ),
                               const SizedBox(height: 24),
                               _FadedGenreSection(
                                 title: 'Suspenso',
                                 movies: movieProvider.moviesSuspenso,
+                                onLoadMore: () =>
+                                    context.read<MovieProvider>().loadNextGenrePage(53),
+                                isLoading: movieProvider.isLoadingGenre,
                               ),
                               const SizedBox(height: 24),
                               _FadedGenreSection(
                                 title: 'Acción',
                                 movies: movieProvider.moviesAccion,
+                                onLoadMore: () =>
+                                    context.read<MovieProvider>().loadNextGenrePage(28),
+                                isLoading: movieProvider.isLoadingGenre,
                               ),
 
                               // ── Opiniones ────────────────────────────
@@ -684,7 +696,9 @@ class _AutoWideCarouselState extends State<_AutoWideCarousel> {
 class _FadedGenreSection extends StatelessWidget {
   final String title;
   final List<dynamic> movies;
-  const _FadedGenreSection({required this.title, required this.movies});
+  final VoidCallback? onLoadMore;
+  final bool isLoading;
+  const _FadedGenreSection({required this.title, required this.movies, this.onLoadMore, this.isLoading = false});
 
   @override
   Widget build(BuildContext context) {
@@ -730,17 +744,23 @@ class _FadedGenreSection extends StatelessWidget {
                   itemBuilder: (context, index) {
                     if (index == movies.length) {
                       return Center(
-                        child: GestureDetector(
-                          onTap: () {
-                            // Aquí puedes manejar la lógica en el futuro para cargar más películas de este género
-                            debugPrint('Cargar más películas de $title');
-                          },
-                          child: const Icon(
-                            Icons.chevron_right,
-                            color: AppColors.hint,
-                            size: 22,
-                          ),
-                        ),
+                        child: isLoading
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  color: AppColors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : GestureDetector(
+                                onTap: onLoadMore,
+                                child: const Icon(
+                                  Icons.chevron_right,
+                                  color: AppColors.hint,
+                                  size: 22,
+                                ),
+                              ),
                       );
                     }
 
