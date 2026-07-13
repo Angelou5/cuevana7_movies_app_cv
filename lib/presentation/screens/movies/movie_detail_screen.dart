@@ -35,21 +35,25 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _loadData();
+  }
+
+  void _loadData() {
     final repo = context.read<MovieProvider>().repository;
     final movie = widget.movie;
 
-    // "Géneros similares" -> pelis del primer género de esta película
     final genreId = movie.genreIds.isNotEmpty
         ? int.tryParse(movie.genreIds.first)
         : null;
-    _similarFuture = genreId == null
-        ? Future.value(<Movie>[])
-        : repo
-              .getByGenre(genreId)
-              .then((list) => list.where((m) => m.id != movie.id).toList());
-
-    _reviewsFuture = repo.getMovieReviews(movie.id);
-    _castFuture = repo.getMovieCast(movie.id);
+    setState(() {
+      _similarFuture = genreId == null
+          ? Future.value(<Movie>[])
+          : repo
+                .getByGenre(genreId)
+                .then((list) => list.where((m) => m.id != movie.id).toList());
+      _reviewsFuture = repo.getMovieReviews(movie.id);
+      _castFuture = repo.getMovieCast(movie.id);
+    });
   }
 
   @override
@@ -71,9 +75,13 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
         child: SafeArea(
           bottom: false,
           child: BottomFadeMask(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
+            child: RefreshIndicator(
+              color: AppColors.white,
+              backgroundColor: Colors.transparent,
+              onRefresh: () async => _loadData(),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _Header(movie: movie, rating: rating),
@@ -242,7 +250,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 

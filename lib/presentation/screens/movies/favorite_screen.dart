@@ -124,38 +124,51 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                         builder: (context, movieProvider, _) {
                           final favorites = movieProvider.favoriteMovies;
                           if (favorites.isEmpty) {
-                            return SingleChildScrollView(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
-                                  SizedBox(height: 80),
-                                  Center(
-                                    child: Column(
-                                      children: [
-                                        Icon(
-                                          Icons.bookmark_border_rounded,
-                                          color: AppColors.hint,
-                                          size: 48,
-                                        ),
-                                        SizedBox(height: 12),
-                                        Text(
-                                          'Aún no tienes películas guardadas',
-                                          style: TextStyle(
+                            return RefreshIndicator(
+                              color: AppColors.white,
+                              backgroundColor: Colors.transparent,
+                              onRefresh: () =>
+                                  context.read<MovieProvider>().loadFavorites(),
+                              child: SingleChildScrollView(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    SizedBox(height: 80),
+                                    Center(
+                                      child: Column(
+                                        children: [
+                                          Icon(
+                                            Icons.bookmark_border_rounded,
                                             color: AppColors.hint,
-                                            fontSize: 14,
-                                            fontFamily: 'InclusiveSans',
+                                            size: 48,
                                           ),
-                                        ),
-                                      ],
+                                          SizedBox(height: 12),
+                                          Text(
+                                            'Aún no tienes películas guardadas',
+                                            style: TextStyle(
+                                              color: AppColors.hint,
+                                              fontSize: 14,
+                                              fontFamily: 'InclusiveSans',
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  SizedBox(height: 140),
-                                ],
+                                    SizedBox(height: 140),
+                                  ],
+                                ),
                               ),
                             );
                           }
-                          return SingleChildScrollView(
-                            child: Padding(
+                          return RefreshIndicator(
+                            color: AppColors.white,
+                            backgroundColor: Colors.transparent,
+                            onRefresh: () =>
+                                context.read<MovieProvider>().loadFavorites(),
+                            child: SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              child: Padding(
                               padding: const EdgeInsets.fromLTRB(
                                 24,
                                 16,
@@ -176,6 +189,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                 itemBuilder: (context, index) {
                                   return MovieCard(movie: favorites[index]);
                                 },
+                                ),
                               ),
                             ),
                           );

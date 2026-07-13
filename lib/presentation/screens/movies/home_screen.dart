@@ -226,7 +226,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   Expanded(
                     child: BottomFadeMask(
-                      child: SingleChildScrollView(
+                      child: RefreshIndicator(
+                        color: AppColors.white,
+                        backgroundColor: Colors.transparent,
+                        onRefresh: () =>
+                            context.read<MovieProvider>().loadNowPlaying(),
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -464,10 +470,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
+        ),
 
           if (_showProfileMenu)
             GestureDetector(

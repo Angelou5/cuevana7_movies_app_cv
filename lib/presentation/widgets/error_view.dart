@@ -77,7 +77,7 @@ class ErrorView extends StatelessWidget {
                     style: TextStyle(
                       color: AppColors.hint,
                       fontSize: msgSize,
-                      fontFamily: 'InclusiveSans',
+                      fontFamily: 'Montserrat',
                     ),
                   ),
                   SizedBox(height: btnSpacing),
