@@ -400,6 +400,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onLoadMore: () =>
                                     context.read<MovieProvider>().loadNextGenrePage(35),
                                 isLoading: movieProvider.isLoadingGenre,
+                                error: movieProvider.error,
+                                onRetry: () => context.read<MovieProvider>().loadNowPlaying(),
                               ),
                               const SizedBox(height: 24),
                               _FadedGenreSection(
@@ -408,6 +410,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onLoadMore: () =>
                                     context.read<MovieProvider>().loadNextGenrePage(27),
                                 isLoading: movieProvider.isLoadingGenre,
+                                error: movieProvider.error,
+                                onRetry: () => context.read<MovieProvider>().loadNowPlaying(),
                               ),
                               const SizedBox(height: 24),
                               _FadedGenreSection(
@@ -416,6 +420,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onLoadMore: () =>
                                     context.read<MovieProvider>().loadNextGenrePage(53),
                                 isLoading: movieProvider.isLoadingGenre,
+                                error: movieProvider.error,
+                                onRetry: () => context.read<MovieProvider>().loadNowPlaying(),
                               ),
                               const SizedBox(height: 24),
                               _FadedGenreSection(
@@ -424,6 +430,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onLoadMore: () =>
                                     context.read<MovieProvider>().loadNextGenrePage(28),
                                 isLoading: movieProvider.isLoadingGenre,
+                                error: movieProvider.error,
+                                onRetry: () => context.read<MovieProvider>().loadNowPlaying(),
                               ),
 
                               // ── Opiniones ────────────────────────────
@@ -705,7 +713,9 @@ class _FadedGenreSection extends StatelessWidget {
   final List<dynamic> movies;
   final VoidCallback? onLoadMore;
   final bool isLoading;
-  const _FadedGenreSection({required this.title, required this.movies, this.onLoadMore, this.isLoading = false});
+  final dynamic error;
+  final VoidCallback? onRetry;
+  const _FadedGenreSection({required this.title, required this.movies, this.onLoadMore, this.isLoading = false, this.error, this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -727,7 +737,12 @@ class _FadedGenreSection extends StatelessWidget {
         const SizedBox(height: 10),
         _LeftFadedCarousel(
           height: 190,
-          child: movies.isEmpty
+          child: movies.isEmpty && error != null
+              ? ErrorView(
+                  error: error,
+                  onRetry: onRetry,
+                )
+              : movies.isEmpty
               ? const Center(
                   child: SizedBox(
                     width: 22,
