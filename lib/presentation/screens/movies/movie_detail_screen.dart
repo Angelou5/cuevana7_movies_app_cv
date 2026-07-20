@@ -4,6 +4,7 @@ import 'package:cuevana7_movies_app_cv/domain/entities/movie.dart';
 import 'package:cuevana7_movies_app_cv/domain/entities/review.dart';
 import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/movie_provider.dart';
+import 'package:cuevana7_movies_app_cv/presentation/providers/user_reviews_provider.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/movie_card.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/review_card.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/app_snackbar.dart';
@@ -13,6 +14,8 @@ import 'package:cuevana7_movies_app_cv/presentation/widgets/cast_carousel.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/error_view.dart';
 import 'package:cuevana7_movies_app_cv/shared/http_utils.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/movie_detail_header.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/user_review_card.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/review_form.dart';
 
 class MovieDetailScreen extends StatefulWidget {
   static const String name = 'movie-detail';
@@ -34,6 +37,10 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
   void initState() {
     super.initState();
     _loadData();
+    // Cargar la reseña del usuario para esta película
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<UserReviewsProvider>().loadMyReview(widget.movie.id);
+    });
   }
 
   void _loadData() {
@@ -52,6 +59,32 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
       _reviewsFuture = repo.getMovieReviews(movie.id);
       _castFuture = repo.getMovieCast(movie.id);
     });
+  }
+
+  void _openReviewForm({String? initialContent, int? initialRating}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => ReviewForm(
+        initialContent: initialContent,
+        initialRating: initialRating,
+        submitLabel: initialContent != null ? 'Actualizar reseña' : 'Publicar reseña',
+        onSubmit: (content, rating) async {
+          final provider = context.read<UserReviewsProvider>();
+          final review = provider.myReview;
+          if (review != null) {
+            return provider.updateReview(review.id, content, rating);
+          } else {
+            return provider.createReview(
+              widget.movie.id,
+              content,
+              rating,
+            );
+          }
+        },
+      ),
+    );
   }
 
   @override
@@ -78,6 +111,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               backgroundColor: Colors.transparent,
               onRefresh: () async {
                 _loadData();
+                context.read<UserReviewsProvider>().loadMyReview(movie.id);
                 await Future.wait([
                   _similarFuture,
                   _reviewsFuture,
@@ -107,6 +141,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                               );
                             }
                           },
+                          onWriteReview: () => _openReviewForm(),
                         );
                       },
                     ),
@@ -168,9 +203,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                             ),
                           ),
                           GestureDetector(
-                            onTap: () {
-                              // TODO: navegar a listado completo del género
-                            },
+                            onTap: () {},
                             child: const Row(
                               children: [
                                 Text(
@@ -216,7 +249,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                                 const EdgeInsets.symmetric(horizontal: 24),
                             scrollDirection: Axis.horizontal,
                             itemCount: similar.length,
-                            separatorBuilder: (_, __) =>
+                            separatorBuilder: (_, _) =>
                                 const SizedBox(width: 10),
                             itemBuilder: (_, i) =>
                                 MovieCard(movie: similar[i]),
@@ -226,7 +259,53 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                     ),
                     const SizedBox(height: sectionSpacing),
 
-                    // ── Reseñas de esta película ────────────────────
+                    // ── Mi reseña ────────────────────────────────
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Consumer<UserReviewsProvider>(
+                        builder: (context, reviewsProvider, _) {
+                          if (reviewsProvider.isLoading) {
+                            return const SizedBox(
+                              height: 80,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: AppColors.white,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            );
+                          }
+
+                          final myReview = reviewsProvider.myReview;
+                          if (myReview != null) {
+                            return UserReviewCard(
+                              review: myReview,
+                              onEdit: () => _openReviewForm(
+                                initialContent: myReview.content,
+                                initialRating: myReview.rating,
+                              ),
+                            );
+                          }
+
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: sectionSpacing),
+
+                    // ── Reseñas de la comunidad (TMDB) ───────────
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24),
+                      child: Text(
+                        'Opiniones de la comunidad',
+                        style: TextStyle(
+                          color: AppColors.white,
+                          fontSize: 24,
+                          fontFamily: 'InclusiveSans',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: FutureBuilder<List<Review>>(

@@ -14,6 +14,7 @@ class MovieDetailHeader extends StatefulWidget {
   final bool isFavorite;
   final VoidCallback onFavoriteToggle;
   final VoidCallback? onPlayTrailer;
+  final VoidCallback? onWriteReview;
 
   const MovieDetailHeader({
     super.key,
@@ -22,6 +23,7 @@ class MovieDetailHeader extends StatefulWidget {
     required this.isFavorite,
     required this.onFavoriteToggle,
     this.onPlayTrailer,
+    this.onWriteReview,
   });
 
   @override
@@ -227,7 +229,8 @@ class _MovieDetailHeaderState extends State<MovieDetailHeader> {
                               const SizedBox(width: 8),
                               ActionIcon(
                                 asset: 'assets/images/comment.svg',
-                                semanticLabel: 'Ver comentarios',
+                                semanticLabel: 'Escribir reseña',
+                                onTap: widget.onWriteReview,
                               ),
                             ],
                           ),
