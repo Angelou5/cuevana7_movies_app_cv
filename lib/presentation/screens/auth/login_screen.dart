@@ -108,10 +108,6 @@ class _LoginScreenState extends State<LoginScreen> {
       final googleUser = await googleSignIn.authenticate();
       
       // Si el usuario le da para atrás o cancela la ventanita flotante
-      if (googleUser == null) {
-        setState(() => _isLoading = false);
-        return;
-      }
 
       // 4. Extraemos los datos de autenticación de Google
       final googleAuth = await googleUser.authentication;
