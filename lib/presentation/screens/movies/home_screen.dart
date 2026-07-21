@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/movie_provider.dart';
 import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/wide_movie_card.dart';
@@ -12,6 +10,7 @@ import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_nav_bar.dart'
 import 'package:cuevana7_movies_app_cv/presentation/widgets/search_bar_widget.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_fade_mask.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/error_view.dart';
+import 'package:cuevana7_movies_app_cv/presentation/screens/movies/configuracion_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String name = 'home';
@@ -24,8 +23,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-
-  bool _showProfileMenu = false;
 
   @override
   void initState() {
@@ -65,90 +62,6 @@ class _HomeScreenState extends State<HomeScreen> {
     ),
     child: const Icon(Icons.movie, color: AppColors.hint),
   );
-
-  void _showLogoutDialog() {
-    showDialog(
-      context: context,
-      barrierColor: Colors.transparent,
-      builder: (_) => Dialog(
-        backgroundColor: const Color(0xFF2C2C2E),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                '¿Estás seguro?',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontFamily: 'InclusiveSans',
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      setState(() => _showProfileMenu = false);
-                      context.read<AuthProvider>().logout();
-                      context.go('/login');
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFB94040),
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      child: const Text(
-                        'Cerrar sesión',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontFamily: 'InclusiveSans',
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3A3A3C),
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      child: const Text(
-                        'Cancelar',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontFamily: 'InclusiveSans',
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   static const _sectionTitle = TextStyle(
     color: AppColors.white,
@@ -202,11 +115,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        // [TAREA: Menú desplegable de perfil] — avatar que abre el dropdown
                         GestureDetector(
-                          onTap: () => setState(
-                            () => _showProfileMenu = !_showProfileMenu,
-                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ConfiguracionScreen(),
+                              ),
+                            );
+                          },
                           child: Container(
                             width: 52,
                             height: 52,
@@ -484,82 +401,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
 
-          if (_showProfileMenu)
-            GestureDetector(
-              onTap: () => setState(() => _showProfileMenu = false),
-              child: Container(color: Colors.transparent),
-            ),
-
-          if (_showProfileMenu)
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 88,
-              right: 24,
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
-                  width: 290,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2C2C2E),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.4),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 8),
-                      _ProfileMenuItem(
-                        icon: Icons.person_outline_rounded,
-                        label: 'Mi cuenta',
-                        onTap: () => setState(() => _showProfileMenu = false),
-                      ),
-                      _ProfileMenuItem(
-                        icon: Icons.tune_rounded,
-                        label: 'Configuraciones',
-                        onTap: () => setState(() => _showProfileMenu = false),
-                      ),
-                      _ProfileMenuItem(
-                        icon: Icons.help_outline_rounded,
-                        label: 'Ayuda',
-                        onTap: () => setState(() => _showProfileMenu = false),
-                      ),
-                      _ProfileMenuItem(
-                        icon: Icons.star_border_rounded,
-                        label: 'Mis opiniones',
-                        onTap: () => setState(() => _showProfileMenu = false),
-                      ),
-                      _ProfileMenuItem(
-                        icon: Icons.history_rounded,
-                        label: 'Lista de reproducción',
-                        onTap: () => setState(() => _showProfileMenu = false),
-                      ),
-                      const Divider(
-                        color: Color(0xFF3A3A3C),
-                        height: 1,
-                        indent: 16,
-                        endIndent: 16,
-                      ),
-                      _ProfileMenuItem(
-                        icon: Icons.logout_rounded,
-                        label: 'Cerrar sesión',
-                        isDestructive: true,
-                        onTap: () {
-                          setState(() => _showProfileMenu = false);
-                          _showLogoutDialog();
-                        },
-                      ),
-                      const SizedBox(height: 8),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
           // ── Navbar flotante sobre el contenido ─────────────────
           Positioned(
             left: 0,
@@ -821,47 +662,6 @@ class _LeftFadedCarousel extends StatelessWidget {
         ).createShader(bounds),
         blendMode: BlendMode.dstIn,
         child: child,
-      ),
-    );
-  }
-}
-
-class _ProfileMenuItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  final bool isDestructive;
-
-  const _ProfileMenuItem({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.isDestructive = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isDestructive ? const Color(0xFFE05C5C) : Colors.white;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        child: Row(
-          children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(width: 14),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 14,
-                fontFamily: 'InclusiveSans',
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
