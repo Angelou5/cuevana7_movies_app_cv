@@ -10,4 +10,5 @@ abstract class MovieRepositories {
   Future<List<Movie>> getByGenre(int genreId, {int page = 1});
   Future<List<Movie>> searchMovies(String query);
   Future<List<Actor>> getMovieCast(int movieId);
+  Future<String?> getMovieTrailerKey(int movieId);
 }
