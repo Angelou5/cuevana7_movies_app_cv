@@ -1,0 +1,93 @@
+import 'package:flutter/material.dart';
+
+import '../../domain/entities/actor.dart';
+import '../../resources/colors/colors.dart';
+
+class CastCarousel extends StatelessWidget {
+  final List<Actor> cast;
+
+  const CastCarousel({super.key, required this.cast});
+
+  @override
+  Widget build(BuildContext context) {
+    if (cast.isEmpty) {
+      return const SizedBox();
+    }
+
+    return SizedBox(
+      height: 170,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: cast.length > 15 ? 15 : cast.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 14),
+        itemBuilder: (_, index) {
+          final actor = cast[index];
+
+          return SizedBox(
+            width: 85,
+            child: Column(
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.grey.shade800,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: actor.profilePath.isEmpty
+                      ? const Icon(
+                          Icons.person,
+                          color: Colors.white70,
+                          size: 34,
+                        )
+                      : Image.network(
+                          actor.profilePath,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Icon(
+                            Icons.person,
+                            color: Colors.white70,
+                            size: 34,
+                          ),
+                        ),
+                ),
+
+                const SizedBox(height: 10),
+
+                Text(
+                  actor.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'InclusiveSans',
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+
+                Text(
+                  actor.character,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(.65),
+                    fontSize: 11,
+                    fontFamily: 'InclusiveSans',
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
