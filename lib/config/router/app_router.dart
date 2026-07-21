@@ -7,7 +7,7 @@ import 'package:cuevana7_movies_app_cv/presentation/screens/auth/register_screen
 import 'package:cuevana7_movies_app_cv/presentation/screens/auth/splash_screen.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart';
 import 'package:cuevana7_movies_app_cv/presentation/screens/movies/favorite_screen.dart';
-import 'package:cuevana7_movies_app_cv/presentation/screens/movies/liked_screen.dart';
+import 'package:cuevana7_movies_app_cv/presentation/screens/movies/configuracion_screen.dart';
 import 'package:cuevana7_movies_app_cv/domain/entities/movie.dart';
 import 'package:cuevana7_movies_app_cv/presentation/screens/movies/movie_detail_screen.dart';
 
@@ -62,8 +62,8 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => _fadePage(const FavoriteScreen(), state),
     ),
     GoRoute(
-      path: '/movies',
-      pageBuilder: (context, state) => _fadePage(const LikedScreen(), state),
+      path: '/configuracion',
+      pageBuilder: (context, state) => _fadePage(const ConfiguracionScreen(), state),
     ),
   ],
 

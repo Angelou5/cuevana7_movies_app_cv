@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 
-enum NavTab { home, favorites, movies }
+enum NavTab { home, favorites, profile }
 
 class BottomNavBar extends StatelessWidget {
   final NavTab activeTab;
@@ -55,14 +55,13 @@ class BottomNavBar extends StatelessWidget {
                       : () => context.go('/favorites'),
                 ),
                 _NavItem(
-                  iconPath: 'assets/images/movies.svg',
-                  // [TAREA: Ícono blanco al estar activo]
-                  activeIconPath: 'assets/images/moviewhite.svg',
-                  label: 'Películas',
-                  isActive: activeTab == NavTab.movies,
-                  onTap: activeTab == NavTab.movies
+                  iconData: Icons.person_outline,
+                  activeIconData: Icons.person,
+                  label: 'Perfil',
+                  isActive: activeTab == NavTab.profile,
+                  onTap: activeTab == NavTab.profile
                       ? null
-                      : () => context.go('/movies'),
+                      : () => context.go('/configuracion'),
                 ),
               ],
             ),
@@ -74,15 +73,19 @@ class BottomNavBar extends StatelessWidget {
 }
 
 class _NavItem extends StatelessWidget {
-  final String iconPath;
-  final String activeIconPath;
+  final String? iconPath;
+  final String? activeIconPath;
+  final IconData? iconData;
+  final IconData? activeIconData;
   final String label;
   final bool isActive;
   final VoidCallback? onTap;
 
   const _NavItem({
-    required this.iconPath,
-    required this.activeIconPath,
+    this.iconPath,
+    this.activeIconPath,
+    this.iconData,
+    this.activeIconData,
     required this.label,
     required this.isActive,
     this.onTap,
@@ -101,22 +104,30 @@ class _NavItem extends StatelessWidget {
             color: Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
-          // [TAREA: Ícono blanco al estar activo] — usa el svg "white"
-          // correspondiente en vez de tintar con colorFilter
-          child: isActive
-              ? SvgPicture.asset(activeIconPath, width: 30, height: 30)
-              : SvgPicture.asset(
-                  iconPath,
-                  width: 30,
-                  height: 30,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors
-                        .divider, // Color(0xFF6B6B6B) — gris sólido, ya lo tienes definido
-                    BlendMode.srcIn,
-                  ),
-                ),
+          child: _buildIcon(),
         ),
       ),
     );
+  }
+
+  Widget _buildIcon() {
+    if (iconData != null && activeIconData != null) {
+      return Icon(
+        isActive ? activeIconData! : iconData!,
+        size: 30,
+        color: isActive ? Colors.white : AppColors.divider,
+      );
+    }
+    return isActive
+        ? SvgPicture.asset(activeIconPath!, width: 30, height: 30)
+        : SvgPicture.asset(
+            iconPath!,
+            width: 30,
+            height: 30,
+            colorFilter: const ColorFilter.mode(
+              AppColors.divider,
+              BlendMode.srcIn,
+            ),
+          );
   }
 }

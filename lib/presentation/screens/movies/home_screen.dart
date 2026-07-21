@@ -10,7 +10,6 @@ import 'package:cuevana7_movies_app_cv/presentation/widgets/error_view.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/auto_wide_carousel.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/faded_genre_section.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/search_bar_widget.dart';
-import 'package:cuevana7_movies_app_cv/presentation/screens/movies/configuracion_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String name = 'home';
@@ -102,30 +101,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               );
                             },
                             onClear: _clearSearch,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ConfiguracionScreen(),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            width: 52,
-                            height: 52,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF8E8E93),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: 30,
-                            ),
                           ),
                         ),
                       ],
