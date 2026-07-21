@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart';
 import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_nav_bar.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_fade_mask.dart';
-import 'package:cuevana7_movies_app_cv/presentation/widgets/search_header.dart';
-import 'package:cuevana7_movies_app_cv/presentation/widgets/profile_menu_overlay.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/search_bar_widget.dart';
+import 'package:cuevana7_movies_app_cv/presentation/screens/movies/configuracion_screen.dart';
 
 class LikedScreen extends StatefulWidget {
   static const String name = 'movies';
@@ -18,7 +15,6 @@ class LikedScreen extends StatefulWidget {
 
 class _LikedScreenState extends State<LikedScreen> {
   final TextEditingController _searchController = TextEditingController();
-  bool _showProfileMenu = false;
 
   @override
   void dispose() {
@@ -52,12 +48,47 @@ class _LikedScreenState extends State<LikedScreen> {
             child: SafeArea(
               child: Column(
                 children: [
-                  SearchHeader(
-                    controller: _searchController,
-                    onChanged: (value) => setState(() {}),
-                    onClear: _clearSearch,
-                    onAvatarTap: () =>
-                        setState(() => _showProfileMenu = !_showProfileMenu),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 24,
+                      
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: SearchBarWidget(
+                            controller: _searchController,
+                            onChanged: (value) => setState(() {}),
+                            onClear: _clearSearch,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ConfiguracionScreen(),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: 52,
+                            height: 52,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF8E8E93),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: 30,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 24),
                   const Padding(
@@ -79,16 +110,6 @@ class _LikedScreenState extends State<LikedScreen> {
                 ],
               ),
             ),
-          ),
-
-          ProfileMenuOverlay(
-            isVisible: _showProfileMenu,
-            onDismiss: () => setState(() => _showProfileMenu = false),
-            onLogout: () {
-              setState(() => _showProfileMenu = false);
-              context.read<AuthProvider>().logout();
-              context.go('/login');
-            },
           ),
 
           // ── Navbar flotante sobre el contenido ─────────────────
