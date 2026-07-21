@@ -15,6 +15,7 @@ import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart
 import 'package:cuevana7_movies_app_cv/presentation/providers/movie_provider.dart';
 import 'package:cuevana7_movies_app_cv/shared/validators.dart';
 import 'package:cuevana7_movies_app_cv/shared/http_utils.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/error_view.dart';
 
 class LoginScreen extends StatefulWidget {
   static const name = 'login-screen';
@@ -31,6 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordCtrl = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+  RequestError? _error;
   final biometricService = BiometricDatasourceImpl();
   AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
@@ -74,9 +76,13 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       final err = classifyError(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(err.message)),
-      );
+      if (err.type == ErrorType.network || err.type == ErrorType.server) {
+        setState(() => _error = err);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(err.message)),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -102,10 +108,6 @@ class _LoginScreenState extends State<LoginScreen> {
       final googleUser = await googleSignIn.authenticate();
       
       // Si el usuario le da para atrás o cancela la ventanita flotante
-      if (googleUser == null) {
-        setState(() => _isLoading = false);
-        return;
-      }
 
       // 4. Extraemos los datos de autenticación de Google
       final googleAuth = await googleUser.authentication;
@@ -150,9 +152,13 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       final err = classifyError(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(err.message)),
-      );
+      if (err.type == ErrorType.network || err.type == ErrorType.server) {
+        setState(() => _error = err);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(err.message)),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -207,9 +213,13 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       final err = classifyError(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(err.message)),
-      );
+      if (err.type == ErrorType.network || err.type == ErrorType.server) {
+        setState(() => _error = err);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(err.message)),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -255,7 +265,20 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
+          child: _error != null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 480),
+                      child: ErrorView(
+                        error: _error!,
+                        onRetry: () => setState(() => _error = null),
+                      ),
+                    ),
+                  ),
+                )
+              : SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Center(
               // [TAREA: Responsividad] — limita el ancho máximo en

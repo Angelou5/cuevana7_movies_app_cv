@@ -138,12 +138,12 @@ class MovieProvider extends ChangeNotifier {
     notifyListeners();
     try {
       movies = await repository.getNowPlaying();
-      loadGenreMovies();
-      _loadAllReviews();
     } catch (e) {
       error = classifyError(e);
       movies = [];
     }
+    loadGenreMovies();
+    _loadAllReviews();
     isLoading = false;
     notifyListeners();
   }
@@ -227,6 +227,11 @@ class MovieProvider extends ChangeNotifier {
       moviesFamilia = results[4];
     } catch (e) {
       debugPrint('Error cargando géneros: $e');
+      moviesComedia = [];
+      moviesTerror = [];
+      moviesAccion = [];
+      moviesSuspenso = [];
+      moviesFamilia = [];
     }
     notifyListeners();
   }

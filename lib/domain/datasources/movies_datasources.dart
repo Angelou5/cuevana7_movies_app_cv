@@ -16,6 +16,7 @@ abstract class MovieDatasources {
   Future<List<Review>> getMovieReviews(int movieId);
   Future<List<Movie>> getByGenre(int genreId, {int page = 1});
   Future<List<Actor>> getMovieCast(int movieId);
+  Future<String?> getMovieTrailerKey(int movieId);
 }
 
 //https://www.themoviedb.org/

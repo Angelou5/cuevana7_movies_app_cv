@@ -3,6 +3,7 @@ import 'package:cuevana7_movies_app_cv/theme/app_theme.dart';
 import 'package:cuevana7_movies_app_cv/config/router/app_router.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/movie_provider.dart';
+import 'package:cuevana7_movies_app_cv/presentation/providers/user_reviews_provider.dart';
 import 'package:cuevana7_movies_app_cv/implements/datasources/movie_db_datasource.dart';
 import 'package:cuevana7_movies_app_cv/implements/repository/movies_repository_impl.dart';
 import 'package:provider/provider.dart';
@@ -12,8 +13,14 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: ".env");
-  print('TOKEN loaded: ${dotenv.env['ACCESS_TOKEN']?.isNotEmpty}');
-  print("Token ${dotenv.env["ACCESS_TOKEN"]}");
+
+  final authProvider = AuthProvider();
+  authProvider.addListener(() {
+    if (!authProvider.isAuthenticated) {
+      appRouter.go('/login');
+    }
+  });
+  AuthProvider.setOnForceLogout(() => authProvider.logout());
 
   final datasource = MovieDbDatasource();
   final repository = MovieRepositoryImpl(datasource);
@@ -21,13 +28,12 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider.value(value: authProvider),
+        ChangeNotifierProvider(create: (_) => UserReviewsProvider()),
         ChangeNotifierProvider(
           create: (_) {
             final provider = MovieProvider(repository);
-
             provider.loadFavorites();
-
             return provider;
           },
         ),
