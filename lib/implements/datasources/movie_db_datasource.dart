@@ -133,41 +133,51 @@ class MovieDbDatasource implements MovieDatasources {
       'accept': 'application/json',
     };
 
-    //Para buscar trailer en español o ingles
     final urlEs = Uri.parse('$_baseUrl/movie/$movieId/videos?language=es-MX');
     final urlEn = Uri.parse('$_baseUrl/movie/$movieId/videos');
 
-    try{
-      var response = await http.get(urlEs, headers: headers).timeout(const Duration(seconds: 10));
+    try {
+      var response = await http
+          .get(urlEs, headers: headers)
+          .timeout(const Duration(seconds: 10));
 
-      if(response.statusCode != 200){
+      if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final results = data['results'] as List;
+        final key = _pickTrailerKey(results);
+        if (key != null) return key;
+      }
 
-        final trailer = results.firstWhere(
-          (v) => v['site'] == 'YouTube' && v['type'] == 'Trailer',
-          orElse: () => null,
-          );
-          if(trailer != null) return trailer['key'] as String;
-        }
+      response = await http
+          .get(urlEn, headers: headers)
+          .timeout(const Duration(seconds: 10));
 
-        //Por si no hay en español, buscamos en ingles
-        response = await http.get(urlEn, headers: headers).timeout(const Duration(seconds: 10));
-
-        if(response.statusCode != 200){
+      if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final results = data['results'] as List;
-
-        final trailer = results.firstWhere(
-          (v) => v['site'] == 'YouTube' && v['type'] == 'Trailer',
-          orElse: () => null,
-          );
-          if(trailer != null) return trailer['key'] as String;
-        }
-        return null;
+        final key = _pickTrailerKey(results);
+        if (key != null) return key;
+      }
+      return null;
     } catch (e) {
       return null;
     }
+  }
+
+  String? _pickTrailerKey(List results) {
+    final youtube = results.where((v) => v['site'] == 'YouTube').toList();
+    if (youtube.isEmpty) return null;
+
+    const preferred = ['Trailer', 'Teaser', 'Clip'];
+    for (final type in preferred) {
+      final match = youtube.firstWhere(
+        (v) => v['type'] == type,
+        orElse: () => null,
+      );
+      if (match != null) return match['key'] as String;
+    }
+
+    return (youtube.first)['key'] as String?;
   }
 
   @override

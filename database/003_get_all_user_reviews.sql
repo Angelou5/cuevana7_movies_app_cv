@@ -1,0 +1,6 @@
+-- No schema changes needed. This is just a reference for the new query.
+-- The endpoint GET /api/reviews/me uses:
+-- SELECT id, user_id, movie_id, rating, content, created_at, updated_at
+-- FROM user_reviews
+-- WHERE user_id = @userId
+-- ORDER BY created_at DESC;

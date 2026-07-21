@@ -31,6 +31,16 @@ class UserReviewsDataSourceImplement implements UserReviewsDataSource {
   }
 
   @override
+  Future<List<UserReview>> getAllByUser(String userId) async {
+    final result = await connection.query(
+      'SELECT id, user_id, movie_id, rating, content, created_at, updated_at '
+      'FROM user_reviews WHERE user_id = @userId ORDER BY created_at DESC',
+      substitutionValues: {'userId': userId},
+    );
+    return result.map(_mapRow).toList();
+  }
+
+  @override
   Future<UserReview> create(
     String userId,
     int movieId,

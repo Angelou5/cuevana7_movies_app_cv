@@ -5,8 +5,13 @@ import '../../resources/colors/colors.dart';
 
 class CastCarousel extends StatelessWidget {
   final List<Actor> cast;
+  final bool showAll;
 
-  const CastCarousel({super.key, required this.cast});
+  const CastCarousel({
+    super.key,
+    required this.cast,
+    this.showAll = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -14,13 +19,15 @@ class CastCarousel extends StatelessWidget {
       return const SizedBox();
     }
 
+    final maxItems = showAll ? cast.length : (cast.length > 5 ? 5 : cast.length);
+
     return SizedBox(
       height: 170,
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
-        itemCount: cast.length > 15 ? 15 : cast.length,
+        itemCount: maxItems,
         separatorBuilder: (_, __) => const SizedBox(width: 14),
         itemBuilder: (_, index) {
           final actor = cast[index];
@@ -78,7 +85,7 @@ class CastCarousel extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(.65),
+                    color: Colors.white.withValues(alpha: 0.65),
                     fontSize: 11,
                     fontFamily: 'InclusiveSans',
                   ),

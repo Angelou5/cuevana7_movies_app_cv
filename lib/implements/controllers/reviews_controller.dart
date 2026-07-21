@@ -38,6 +38,23 @@ class ReviewsController {
     }
   }
 
+  // GET /api/reviews/me
+  Future<Response> handleGetAllByUser(Request request) async {
+    try {
+      final userId = _getUserId(request);
+      final reviews = await repository.getAllByUser(userId);
+      return Response.ok(
+        jsonEncode(reviews.map((r) => r.toJson()).toList()),
+        headers: {'content-type': 'application/json'},
+      );
+    } catch (e) {
+      return Response.internalServerError(
+        body: jsonEncode({'error': e.toString()}),
+        headers: {'content-type': 'application/json'},
+      );
+    }
+  }
+
   // POST /api/reviews
   Future<Response> handleCreateReview(Request request) async {
     try {

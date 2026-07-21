@@ -40,6 +40,23 @@ class ApiClient {
     return null;
   }
 
+  Future<List<Map<String, dynamic>>> getList(String path) async {
+    final response = await http.get(
+      Uri.parse('$_baseUrl$path'),
+      headers: await _headers(),
+    );
+    if (response.statusCode == 403) {
+      _handle403();
+      return [];
+    }
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+      if (decoded == null) return [];
+      return (decoded as List).cast<Map<String, dynamic>>();
+    }
+    return [];
+  }
+
   Future<Map<String, dynamic>?> post(
     String path,
     Map<String, dynamic> body,

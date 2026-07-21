@@ -32,6 +32,7 @@ class ApiRouter {
     });
 
     // ── Reseñas de usuarios ──────────────────────────────────
+    routerProtected.get('/reviews/me', reviewsController.handleGetAllByUser);
     routerProtected.get('/reviews/movie/<movieId>',
         reviewsController.handleGetByMovie);
     routerProtected.post('/reviews', reviewsController.handleCreateReview);
