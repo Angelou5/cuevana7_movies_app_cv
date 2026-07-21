@@ -34,4 +34,10 @@ class MovieRepositoryImpl implements MovieRepositories {
   Future<List<Actor>> getMovieCast(int movieId) {
     return datasource.getMovieCast(movieId);
   }
+
+  //Nuevo consumo para trailer de la pelicula
+  @override
+  Future<String?> getMovieTrailerKey(int movieId) {
+    return datasource.getMovieTrailerKey(movieId);
+  }
 }

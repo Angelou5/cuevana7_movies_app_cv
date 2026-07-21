@@ -157,6 +157,49 @@ class MovieDbDatasource implements MovieDatasources {
   }
 
   @override
+  Future<String?> getMovieTrailerKey(int movieId) async {
+    final headers = {
+      'Authorization': 'Bearer $_token',
+      'accept': 'application/json',
+    };
+
+    //Para buscar trailer en español o ingles
+    final urlEs = Uri.parse('$_baseUrl/movie/$movieId/videos?language=es-MX');
+    final urlEn = Uri.parse('$_baseUrl/movie/$movieId/videos');
+
+    try{
+      var response = await http.get(urlEs, headers: headers).timeout(const Duration(seconds: 10));
+
+      if(response.statusCode != 200){
+        final data = jsonDecode(response.body);
+        final results = data['results'] as List;
+
+        final trailer = results.firstWhere(
+          (v) => v['site'] == 'YouTube' && v['type'] == 'Trailer',
+          orElse: () => null,
+          );
+        }
+
+        //Por si no hay en español, buscamos en ingles
+        response = await http.get(urlEn, headers: headers).timeout(const Duration(seconds: 10));
+
+        if(response.statusCode != 200){
+        final data = jsonDecode(response.body);
+        final results = data['results'] as List;
+
+        final trailer = results.firstWhere(
+          (v) => v['site'] == 'YouTube' && v['type'] == 'Trailer',
+          orElse: () => null,
+          );
+          if(trailer != null) return trailer['key'] as String;
+        }
+        return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
   Future<List<Actor>> getMovieCast(int movieId) async {
     final url = Uri.parse('$_baseUrl/movie/$movieId/credits?language=es-MX');
 
