@@ -72,12 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
             width: double.infinity,
             height: double.infinity,
             decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: [0.20, 1.0],
-                colors: [AppColors.background, AppColors.dark],
-              ),
+              color: AppColors.background
             ),
             child: SafeArea(
               child: Column(
@@ -392,7 +387,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                 ),
                               ],
-                              const SizedBox(height: 110),
+                              const SizedBox(height: 80),
                             ],
                           ),
                         ),

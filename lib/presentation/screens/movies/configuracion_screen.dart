@@ -6,6 +6,7 @@ import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_nav_bar.dart'
 import 'ayuda_screen.dart';
 import 'opiniones_screen.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/profile_picture_provider.dart';
+import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 
 class ConfiguracionScreen extends StatefulWidget {
   const ConfiguracionScreen({super.key});
@@ -23,23 +24,19 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
   static const Color fondoItem = Color(0xFF0F1E33);
   static const Color acento = Color(0xFF3AD6D9);
   static const Color textoSecundario = Color(0xFF8C99AC);
+  static const Color peligro = Color.fromARGB(172, 131, 53, 53);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: fondo,
+      backgroundColor: AppColors.background,
       body: Stack(
         children: [
           Container(
             width: double.infinity,
             height: double.infinity,
             decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: [0.20, 1.0],
-                colors: [fondo, Color(0xFF060D18)],
-              ),
+              color: AppColors.background,
             ),
             child: SafeArea(
               child: Column(
@@ -121,7 +118,7 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                           _OpcionIcono(
                             titulo: 'Cerrar sesión',
                             icono: Icons.logout,
-                            fondoItem: fondoItem,
+                            fondoItem: peligro,
                             onTap: () {
                               showDialog(
                                 context: context,

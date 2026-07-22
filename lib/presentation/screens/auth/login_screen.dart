@@ -70,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
         context.go('/');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Correo o contraseña incorrectos xd')),
+          const SnackBar(content: Text('Correo o contraseña incorrectos')),
         );
       }
     } catch (e) {
@@ -241,7 +241,7 @@ class _LoginScreenState extends State<LoginScreen> {
         splashRadius: 20,
         icon: Icon(
           obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-          color: AppColors.hint,
+          color: AppColors.white,
           size: 22,
         ),
         onPressed: onToggle,
@@ -257,13 +257,16 @@ class _LoginScreenState extends State<LoginScreen> {
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
+          color: AppColors.background,
+        ),
+        /*decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             stops: [0.53, 1.0],
             colors: [AppColors.background, AppColors.dark],
           ),
-        ),
+        ),*/
         child: SafeArea(
           child: _error != null
               ? Center(
