@@ -11,6 +11,11 @@ dependencies:
   flutter:
     sdk: flutter
 
+  #Para guardado de foto de perfil localmente
+  image_picker: ^1.1.2
+  path_provider: ^2.1.3
+  path: ^1.9.0
+
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.5.3
 

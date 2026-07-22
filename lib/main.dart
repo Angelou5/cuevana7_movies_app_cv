@@ -8,7 +8,7 @@ import 'package:cuevana7_movies_app_cv/implements/datasources/movie_db_datasourc
 import 'package:cuevana7_movies_app_cv/implements/repository/movies_repository_impl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
+import 'package:cuevana7_movies_app_cv/presentation/providers/profile_picture_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -30,6 +30,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider.value(value: authProvider),
         ChangeNotifierProvider(create: (_) => UserReviewsProvider()),
+        ChangeNotifierProvider(create: (_) => ProfilePictureProvider()),
         ChangeNotifierProvider(
           create: (_) {
             final provider = MovieProvider(repository);

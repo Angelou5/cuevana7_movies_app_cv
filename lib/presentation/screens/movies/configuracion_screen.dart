@@ -5,6 +5,8 @@ import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart
 import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_nav_bar.dart';
 import 'ayuda_screen.dart';
 import 'opiniones_screen.dart';
+import 'dart:io';
+import 'package:cuevana7_movies_app_cv/presentation/providers/profile_picture_provider.dart';
 
 class ConfiguracionScreen extends StatefulWidget {
   const ConfiguracionScreen({super.key});
@@ -275,6 +277,9 @@ class _PerfilTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Escuchamos los cambios del provider de foto de perfil
+    final profileProvider = context.watch<ProfilePictureProvider>();
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
@@ -285,10 +290,59 @@ class _PerfilTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.white24,
-              child: Icon(Icons.person, color: Colors.white70),
+            // --- AVATAR CON SIMULACIÓN DE SUBIDA ---
+            GestureDetector(
+              onTap: profileProvider.isUploading
+                  ? null
+                  : () => profileProvider.changeProfilePicture(),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: Colors.white24,
+                    backgroundImage: profileProvider.storedProfilePicture != null
+                        ? FileImage(profileProvider.storedProfilePicture!)
+                        : null,
+                    child: profileProvider.storedProfilePicture == null && !profileProvider.isUploading
+                        ? const Icon(Icons.person, color: Colors.white70, size: 26)
+                        : null,
+                  ),
+                  // Muestra el spinner mientras simula la subida de 2 segundos
+                  if (profileProvider.isUploading)
+                    Positioned.fill(
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.black45,
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFF3AD6D9), // Color de acento
+                        ),
+                      ),
+                    ),
+                  // Badge / Icono de la camarita en la esquina
+                  if (!profileProvider.isUploading)
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF3AD6D9),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          size: 10,
+                          color: Color(0xFF0B1626),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -306,9 +360,13 @@ class _PerfilTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    subtitulo,
+                    profileProvider.isUploading
+                        ? 'Simulando subida al servidor...'
+                        : subtitulo,
                     style: TextStyle(
-                      color: textoSecundario,
+                      color: profileProvider.isUploading
+                          ? const Color(0xFF3AD6D9)
+                          : textoSecundario,
                       fontSize: 11,
                       fontFamily: 'Montserrat',
                     ),
