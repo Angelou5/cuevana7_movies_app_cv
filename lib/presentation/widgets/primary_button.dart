@@ -5,14 +5,16 @@ class PrimaryButton extends StatelessWidget {
   final String label;
   final bool isLoading;
   final VoidCallback? onPressed;
-  final Widget? icon; // ✨ Añadimos esta propiedad opcional
+  final Widget? icon;
+  final Widget? trailingIcon;
 
   const PrimaryButton({
     super.key,
     required this.label,
     required this.isLoading,
     required this.onPressed,
-    this.icon, // Lo inicializamos aquí
+    this.icon,
+    this.trailingIcon,
   });
 
   @override
@@ -40,23 +42,26 @@ class PrimaryButton extends StatelessWidget {
                   strokeWidth: 2.5,
                 ),
               )
-            // Usamos un Row para alinear el ícono (si existe) y el texto
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (icon != null) ...[
                     icon!,
-                    const SizedBox(width: 12), // Espaciado entre el ícono y el texto
+                    const SizedBox(width: 12),
                   ],
                   Text(
                     label,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
-                      fontFamily: 'Inclusive Sans', // Tu tipografía
+                      fontFamily: 'Inclusive Sans',
                       fontWeight: FontWeight.w400,
                     ),
                   ),
+                  if (trailingIcon != null) ...[
+                    const SizedBox(width: 12),
+                    trailingIcon!,
+                  ],
                 ],
               ),
       ),
