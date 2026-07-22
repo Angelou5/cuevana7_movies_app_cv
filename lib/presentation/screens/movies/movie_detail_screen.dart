@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cuevana7_movies_app_cv/domain/entities/movie.dart';
-import 'package:cuevana7_movies_app_cv/domain/entities/review.dart';
 import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/movie_provider.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/user_reviews_provider.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/movie_card.dart';
-import 'package:cuevana7_movies_app_cv/presentation/widgets/review_card.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/app_snackbar.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_fade_mask.dart';
 import 'package:cuevana7_movies_app_cv/domain/entities/actor.dart';
@@ -16,6 +14,7 @@ import 'package:cuevana7_movies_app_cv/shared/http_utils.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/movie_detail_header.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/user_review_card.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/review_form.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/trailer_player.dart';
 
 class MovieDetailScreen extends StatefulWidget {
   static const String name = 'movie-detail';
@@ -30,8 +29,9 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
   static const double sectionSpacing = 28;
 
   late Future<List<Movie>> _similarFuture;
-  late Future<List<Review>> _reviewsFuture;
   late Future<List<Actor>> _castFuture;
+  bool _showAllCast = false;
+  bool _showAllSimilar = false;
 
   @override
   void initState() {
@@ -40,6 +40,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     // Cargar la reseña del usuario para esta película
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<UserReviewsProvider>().loadMyReview(widget.movie.id);
+      context.read<MovieProvider>().loadTrailer(widget.movie.id);
     });
   }
 
@@ -56,7 +57,6 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           : repo
                 .getByGenre(genreId)
                 .then((list) => list.where((m) => m.id != movie.id).toList());
-      _reviewsFuture = repo.getMovieReviews(movie.id);
       _castFuture = repo.getMovieCast(movie.id);
     });
   }
@@ -114,7 +114,6 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 context.read<UserReviewsProvider>().loadMyReview(movie.id);
                 await Future.wait([
                   _similarFuture,
-                  _reviewsFuture,
                   _castFuture,
                 ]);
               },
@@ -141,6 +140,19 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                               );
                             }
                           },
+                          onPlayTrailer: provider.trailerKey != null
+                              ? () {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (_) => TrailerPlayer(
+                                      videoId: provider.trailerKey!,
+                                    ),
+                                  );
+                                }
+                              : null,
+                          isLoadingTrailer: provider.isLoadingTrailer,
                           onWriteReview: () => _openReviewForm(),
                         );
                       },
@@ -149,41 +161,77 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                     const SizedBox(height: sectionSpacing),
 
                     // ── Reparto ──────────────────────────────────
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24),
-                      child: Text(
-                        'Reparto',
-                        style: TextStyle(
-                          color: AppColors.white,
-                          fontSize: 24,
-                          fontFamily: 'InclusiveSans',
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
                     FutureBuilder<List<Actor>>(
                       future: _castFuture,
                       builder: (context, snapshot) {
-                        if (snapshot.hasError) {
-                          return SizedBox(
-                            height: 170,
-                            child: ErrorView(
-                              error: classifyError(snapshot.error!),
-                            ),
-                          );
-                        }
-                        if (!snapshot.hasData) {
-                          return const SizedBox(
-                            height: 170,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                color: AppColors.white,
+                        final cast = snapshot.data;
+                        final hasMore = cast != null && !_showAllCast && cast.length > 5;
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    'Reparto',
+                                    style: TextStyle(
+                                      color: AppColors.white,
+                                      fontSize: 24,
+                                      fontFamily: 'InclusiveSans',
+                                    ),
+                                  ),
+                                  if (hasMore)
+                                    GestureDetector(
+                                      onTap: () => setState(
+                                        () => _showAllCast = true,
+                                      ),
+                                      child: const Row(
+                                        children: [
+                                          Text(
+                                            'Ver más',
+                                            style: TextStyle(
+                                              color: AppColors.white,
+                                              fontSize: 16,
+                                              fontFamily: 'Montserrat',
+                                            ),
+                                          ),
+                                          Icon(
+                                            Icons.chevron_right,
+                                            color: AppColors.white,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
-                          );
-                        }
-
-                        return CastCarousel(cast: snapshot.data!);
+                            const SizedBox(height: 10),
+                            if (snapshot.hasError)
+                              SizedBox(
+                                height: 170,
+                                child: ErrorView(
+                                  error: classifyError(snapshot.error!),
+                                ),
+                              )
+                            else if (!snapshot.hasData)
+                              const SizedBox(
+                                height: 170,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppColors.white,
+                                  ),
+                                ),
+                              )
+                            else
+                              CastCarousel(
+                                cast: cast!,
+                                showAll: _showAllCast,
+                              ),
+                          ],
+                        );
                       },
                     ),
                     const SizedBox(height: sectionSpacing),
@@ -202,25 +250,27 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                               fontFamily: 'InclusiveSans',
                             ),
                           ),
-                          GestureDetector(
-                            onTap: () {},
-                            child: const Row(
-                              children: [
-                                Text(
-                                  'Ver más',
-                                  style: TextStyle(
-                                    color: AppColors.white,
-                                    fontSize: 16,
-                                    fontFamily: 'Montserrat',
+                          if (!_showAllSimilar)
+                            GestureDetector(
+                              onTap: () =>
+                                  setState(() => _showAllSimilar = true),
+                              child: const Row(
+                                children: [
+                                  Text(
+                                    'Ver más',
+                                    style: TextStyle(
+                                      color: AppColors.white,
+                                      fontSize: 16,
+                                      fontFamily: 'Montserrat',
+                                    ),
                                   ),
-                                ),
-                                Icon(
-                                  Icons.chevron_right,
-                                  color: AppColors.white,
-                                ),
-                              ],
+                                  Icon(
+                                    Icons.chevron_right,
+                                    color: AppColors.white,
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ),
@@ -244,11 +294,14 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                               ),
                             );
                           }
+                          final displayCount = _showAllSimilar
+                              ? similar.length
+                              : (similar.length > 5 ? 5 : similar.length);
                           return ListView.separated(
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 24),
                             scrollDirection: Axis.horizontal,
-                            itemCount: similar.length,
+                            itemCount: displayCount,
                             separatorBuilder: (_, _) =>
                                 const SizedBox(width: 10),
                             itemBuilder: (_, i) =>
@@ -288,73 +341,6 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                           }
 
                           return const SizedBox.shrink();
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: sectionSpacing),
-
-                    // ── Reseñas de la comunidad (TMDB) ───────────
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24),
-                      child: Text(
-                        'Opiniones de la comunidad',
-                        style: TextStyle(
-                          color: AppColors.white,
-                          fontSize: 24,
-                          fontFamily: 'InclusiveSans',
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: FutureBuilder<List<Review>>(
-                        future: _reviewsFuture,
-                        builder: (context, snapshot) {
-                          if (snapshot.hasError) {
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 20),
-                              child: ErrorView(
-                                error: RequestError(
-                                  type: ErrorType.unknown,
-                                  message:
-                                      'No se pudieron cargar las reseñas',
-                                ),
-                              ),
-                            );
-                          }
-                          final reviews = snapshot.data ?? [];
-                          if (!snapshot.hasData) {
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 20),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.white,
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                            );
-                          }
-                          if (reviews.isEmpty) {
-                            return const SizedBox();
-                          }
-                          return Column(
-                            children: reviews
-                                .map(
-                                  (r) => Padding(
-                                    padding: const EdgeInsets.only(
-                                      bottom: 12,
-                                    ),
-                                    child: ReviewCard(
-                                      movieReview: MovieReview(
-                                        r,
-                                        movie.title,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                          );
                         },
                       ),
                     ),

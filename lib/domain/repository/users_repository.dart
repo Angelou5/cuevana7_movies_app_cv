@@ -9,4 +9,6 @@ abstract class UserRepository {
   
   Future<void> signOut();
 
+  Future<User> signInWithGoogle(String idToken);
+
 }

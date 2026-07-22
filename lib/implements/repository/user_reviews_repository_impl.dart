@@ -13,6 +13,11 @@ class ImplementUserReviewsRepository implements UserReviewsRepository {
   }
 
   @override
+  Future<List<UserReview>> getAllByUser(String userId) {
+    return dataSource.getAllByUser(userId);
+  }
+
+  @override
   Future<UserReview> create(
     String userId,
     int movieId,

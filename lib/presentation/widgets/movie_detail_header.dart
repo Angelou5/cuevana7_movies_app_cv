@@ -14,6 +14,7 @@ class MovieDetailHeader extends StatefulWidget {
   final bool isFavorite;
   final VoidCallback onFavoriteToggle;
   final VoidCallback? onPlayTrailer;
+  final bool isLoadingTrailer;
   final VoidCallback? onWriteReview;
 
   const MovieDetailHeader({
@@ -23,6 +24,7 @@ class MovieDetailHeader extends StatefulWidget {
     required this.isFavorite,
     required this.onFavoriteToggle,
     this.onPlayTrailer,
+    this.isLoadingTrailer = false,
     this.onWriteReview,
   });
 
@@ -33,6 +35,8 @@ class MovieDetailHeader extends StatefulWidget {
 class _MovieDetailHeaderState extends State<MovieDetailHeader> {
   bool _isExpanded = false;
   double _panelHeight = 230;
+  bool _isHovered = false;
+  bool _isPressed = false;
 
   static const int _overviewCollapsedThreshold = 140;
   static const double _backdropHeight = 460;
@@ -189,51 +193,101 @@ class _MovieDetailHeaderState extends State<MovieDetailHeader> {
                         const SizedBox(height: 16),
 
                         // ── Acciones: trailer + favorito + comentarios ──
-                        IntrinsicHeight(
+                        SizedBox(
+                          height: 44,
                           child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: widget.onPlayTrailer,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 10,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: const Text(
-                                      'Reproducir trailer',
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 20,
-                                        fontFamily: 'InclusiveSans',
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: MouseRegion(
+                                  cursor: widget.onPlayTrailer != null
+                                      ? SystemMouseCursors.click
+                                      : MouseCursor.defer,
+                                  onEnter: (_) =>
+                                      setState(() => _isHovered = true),
+                                  onExit: (_) =>
+                                      setState(() => _isHovered = false),
+                                  child: GestureDetector(
+                                    onTapDown: (_) =>
+                                        setState(() => _isPressed = true),
+                                    onTapUp: (_) =>
+                                        setState(() => _isPressed = false),
+                                    onTapCancel: () =>
+                                        setState(() => _isPressed = false),
+                                    onTap: widget.isLoadingTrailer
+                                        ? null
+                                        : widget.onPlayTrailer,
+                                    child: AnimatedScale(
+                                      scale: _isPressed ? 0.96 : 1.0,
+                                      duration:
+                                          const Duration(milliseconds: 100),
+                                      child: AnimatedOpacity(
+                                        duration:
+                                            const Duration(milliseconds: 200),
+                                        opacity: widget.onPlayTrailer !=
+                                                    null &&
+                                                !widget.isLoadingTrailer
+                                            ? 1.0
+                                            : 0.5,
+                                        child: AnimatedContainer(
+                                          duration: const Duration(
+                                              milliseconds: 150),
+                                          padding:
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 10),
+                                          decoration: BoxDecoration(
+                                            color: _isPressed
+                                                ? Colors.grey.shade400
+                                                : _isHovered
+                                                    ? Colors.grey.shade200
+                                                    : Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                          ),
+                                          alignment: Alignment.center,
+                                          child: widget.isLoadingTrailer
+                                              ? const SizedBox(
+                                                  height: 22,
+                                                  width: 22,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                    strokeWidth: 2.5,
+                                                    color: Colors.black,
+                                                  ),
+                                                )
+                                              : const Text(
+                                                  'Reproducir trailer',
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 20,
+                                                    fontFamily:
+                                                        'InclusiveSans',
+                                                  ),
+                                                ),
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              ActionIcon(
-                                asset: widget.isFavorite
-                                    ? 'assets/images/favoritewhite.svg'
-                                    : 'assets/images/favorite.svg',
-                                semanticLabel: widget.isFavorite
-                                    ? 'Quitar de favoritos'
-                                    : 'Agregar a favoritos',
-                                onTap: widget.onFavoriteToggle,
-                              ),
-                              const SizedBox(width: 8),
-                              ActionIcon(
-                                asset: 'assets/images/comment.svg',
-                                semanticLabel: 'Escribir reseña',
-                                onTap: widget.onWriteReview,
-                              ),
-                            ],
-                          ),
+                            const SizedBox(width: 8),
+                            ActionIcon(
+                              asset: widget.isFavorite
+                                  ? 'assets/images/favoritewhite.svg'
+                                  : 'assets/images/favorite.svg',
+                              semanticLabel: widget.isFavorite
+                                  ? 'Quitar de favoritos'
+                                  : 'Agregar a favoritos',
+                              onTap: widget.onFavoriteToggle,
+                            ),
+                            const SizedBox(width: 8),
+                            ActionIcon(
+                              asset: 'assets/images/comment.svg',
+                              semanticLabel: 'Escribir reseña',
+                              onTap: widget.onWriteReview,
+                            ),
+                          ],
+                        ),
                         ),
                       ],
                     ),

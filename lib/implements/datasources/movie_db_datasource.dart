@@ -45,36 +45,6 @@ class MovieDbDatasource implements MovieDatasources {
     return movies;
   }
 
-  // se implemento getMoviesByGenre que llama al endpoint de TMDB
-  @override
-  Future<List<Movie>> getMoviesByGenre(int genreId, {int page = 1}) async {
-    final url = Uri.parse(
-      '$_baseUrl/discover/movie?with_genres=$genreId&page=$page&language=es-MX',
-    );
-
-    final response = await http.get(
-      url,
-      headers: {
-        'Authorization': 'Bearer $_token',
-        'accept': 'application/json',
-      },
-    ).timeout(const Duration(seconds: 10));
-
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Error al cargar pelis por género de TMDB: ${response.statusCode}',
-      );
-    }
-
-    final data = jsonDecode(response.body);
-
-    final List<Movie> movies = (data['results'] as List)
-        .map((movieJson) => MovieMapper.fromJson(movieJson))
-        .toList();
-
-    return movies;
-  }
-
   @override
   Future<List<Review>> getMovieReviews(int movieId) async {
     final headers = {
@@ -163,40 +133,51 @@ class MovieDbDatasource implements MovieDatasources {
       'accept': 'application/json',
     };
 
-    //Para buscar trailer en español o ingles
     final urlEs = Uri.parse('$_baseUrl/movie/$movieId/videos?language=es-MX');
     final urlEn = Uri.parse('$_baseUrl/movie/$movieId/videos');
 
-    try{
-      var response = await http.get(urlEs, headers: headers).timeout(const Duration(seconds: 10));
+    try {
+      var response = await http
+          .get(urlEs, headers: headers)
+          .timeout(const Duration(seconds: 10));
 
-      if(response.statusCode != 200){
+      if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final results = data['results'] as List;
+        final key = _pickTrailerKey(results);
+        if (key != null) return key;
+      }
 
-        final trailer = results.firstWhere(
-          (v) => v['site'] == 'YouTube' && v['type'] == 'Trailer',
-          orElse: () => null,
-          );
-        }
+      response = await http
+          .get(urlEn, headers: headers)
+          .timeout(const Duration(seconds: 10));
 
-        //Por si no hay en español, buscamos en ingles
-        response = await http.get(urlEn, headers: headers).timeout(const Duration(seconds: 10));
-
-        if(response.statusCode != 200){
+      if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final results = data['results'] as List;
-
-        final trailer = results.firstWhere(
-          (v) => v['site'] == 'YouTube' && v['type'] == 'Trailer',
-          orElse: () => null,
-          );
-          if(trailer != null) return trailer['key'] as String;
-        }
-        return null;
+        final key = _pickTrailerKey(results);
+        if (key != null) return key;
+      }
+      return null;
     } catch (e) {
       return null;
     }
+  }
+
+  String? _pickTrailerKey(List results) {
+    final youtube = results.where((v) => v['site'] == 'YouTube').toList();
+    if (youtube.isEmpty) return null;
+
+    const preferred = ['Trailer', 'Teaser', 'Clip'];
+    for (final type in preferred) {
+      final match = youtube.firstWhere(
+        (v) => v['type'] == type,
+        orElse: () => null,
+      );
+      if (match != null) return match['key'] as String;
+    }
+
+    return (youtube.first)['key'] as String?;
   }
 
   @override

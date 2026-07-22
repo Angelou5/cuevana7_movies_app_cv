@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/movie_provider.dart';
 import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/movie_card.dart';
@@ -11,8 +9,7 @@ import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_fade_mask.dar
 import 'package:cuevana7_movies_app_cv/presentation/widgets/error_view.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/auto_wide_carousel.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/faded_genre_section.dart';
-import 'package:cuevana7_movies_app_cv/presentation/widgets/search_header.dart';
-import 'package:cuevana7_movies_app_cv/presentation/widgets/profile_menu_overlay.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/search_bar_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String name = 'home';
@@ -25,7 +22,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  bool _showProfileMenu = false;
 
   @override
   void initState() {
@@ -86,17 +82,29 @@ class _HomeScreenState extends State<HomeScreen> {
             child: SafeArea(
               child: Column(
                 children: [
-                  SearchHeader(
-                    controller: _searchController,
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value.toLowerCase();
-                      });
-                      context.read<MovieProvider>().onSearchChanged(value);
-                    },
-                    onClear: _clearSearch,
-                    onAvatarTap: () =>
-                        setState(() => _showProfileMenu = !_showProfileMenu),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 24,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: SearchBarWidget(
+                            controller: _searchController,
+                            onChanged: (value) {
+                              setState(() {
+                                _searchQuery = value.toLowerCase();
+                              });
+                              context.read<MovieProvider>().onSearchChanged(
+                                value,
+                              );
+                            },
+                            onClear: _clearSearch,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   Expanded(
                     child: BottomFadeMask(
@@ -394,16 +402,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-          ),
-
-          ProfileMenuOverlay(
-            isVisible: _showProfileMenu,
-            onDismiss: () => setState(() => _showProfileMenu = false),
-            onLogout: () {
-              setState(() => _showProfileMenu = false);
-              context.read<AuthProvider>().logout();
-              context.go('/login');
-            },
           ),
 
           // ── Navbar flotante sobre el contenido ─────────────────

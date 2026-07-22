@@ -425,22 +425,21 @@ class _LoginScreenState extends State<LoginScreen> {
                           padding: const EdgeInsets.all(6), // Espaciado interno para el círculo blanco
                           child: Image.asset(
                             'assets/images/google.png',
-                            height: 24,
+                            height: 24, // Tu asset con la altura que definiste
                           ),
                         ),
                       ),
 
                       const SizedBox(height: 16),
 
-                      // Botón biometría
+                      // Huella dactilar
                       PrimaryButton(
                         label: 'Usar biometría',
-                        isLoading: _isLoading,
-                        onPressed: _isLoading ? null : _authenticateWithFingerprint,
+                        isLoading: false,
+                        onPressed: _authenticateWithFingerprint,
                         icon: Image.asset(
                           'assets/images/huella.png',
                           height: 24,
-                          color: Colors.white,
                         ),
                       ),
 

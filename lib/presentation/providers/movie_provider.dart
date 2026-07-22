@@ -33,6 +33,24 @@ class MovieProvider extends ChangeNotifier {
   RequestError? error;
   int currentPage = 1;
 
+  String? _trailerKey;
+  bool _isLoadingTrailer = false;
+  String? get trailerKey => _trailerKey;
+  bool get isLoadingTrailer => _isLoadingTrailer;
+
+  Future<void> loadTrailer(int movieId) async {
+    _isLoadingTrailer = true;
+    _trailerKey = null;
+    notifyListeners();
+    try {
+      _trailerKey = await repository.getMovieTrailerKey(movieId);
+    } catch (_) {
+      _trailerKey = null;
+    }
+    _isLoadingTrailer = false;
+    notifyListeners();
+  }
+
   int _comediaPage = 1;
   int _terrorPage = 1;
   int _accionPage = 1;
