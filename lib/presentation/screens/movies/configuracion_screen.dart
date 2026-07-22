@@ -5,7 +5,6 @@ import 'package:cuevana7_movies_app_cv/presentation/providers/auth_provider.dart
 import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_nav_bar.dart';
 import 'ayuda_screen.dart';
 import 'opiniones_screen.dart';
-import 'dart:io';
 import 'package:cuevana7_movies_app_cv/presentation/providers/profile_picture_provider.dart';
 
 class ConfiguracionScreen extends StatefulWidget {
@@ -67,7 +66,6 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                       child: Column(
                         children: [
                           _PerfilTile(
-                            email: 'gaelMovies@gmail.com',
                             subtitulo: 'Ir a perfil, cambiar contraseña, foto de perfil',
                             fondoItem: fondoItem,
                             textoSecundario: textoSecundario,
@@ -263,13 +261,11 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
 }
 
 class _PerfilTile extends StatelessWidget {
-  final String email;
   final String subtitulo;
   final Color fondoItem;
   final Color textoSecundario;
 
   const _PerfilTile({
-    required this.email,
     required this.subtitulo,
     required this.fondoItem,
     required this.textoSecundario,
@@ -277,8 +273,14 @@ class _PerfilTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Escuchamos los cambios del provider de foto de perfil
+    // Escuchamos la foto y los datos del usuario autenticado
     final profileProvider = context.watch<ProfilePictureProvider>();
+    final authProvider = context.watch<AuthProvider>();
+
+    // 1. Intentamos obtener el nombre (o el displayName de Google/Registro)
+    // 2. Si no hay nombre, mostramos el email
+    // 3. Si todo falla, dejamos 'Usuario' como fallback
+    final String nombreMostrar = authProvider.userName ?? 'Usuario';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -308,7 +310,6 @@ class _PerfilTile extends StatelessWidget {
                         ? const Icon(Icons.person, color: Colors.white70, size: 26)
                         : null,
                   ),
-                  // Muestra el spinner mientras simula la subida de 2 segundos
                   if (profileProvider.isUploading)
                     Positioned.fill(
                       child: Container(
@@ -319,11 +320,10 @@ class _PerfilTile extends StatelessWidget {
                         padding: const EdgeInsets.all(8),
                         child: const CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Color(0xFF3AD6D9), // Color de acento
+                          color: Color(0xFF3AD6D9),
                         ),
                       ),
                     ),
-                  // Badge / Icono de la camarita en la esquina
                   if (!profileProvider.isUploading)
                     Positioned(
                       right: 0,
@@ -349,8 +349,9 @@ class _PerfilTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // --- AQUÍ SE MUESTRA EL NOMBRE DINÁMICO ---
                   Text(
-                    email,
+                    nombreMostrar,
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,

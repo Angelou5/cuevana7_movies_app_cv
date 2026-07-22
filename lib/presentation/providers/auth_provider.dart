@@ -62,4 +62,29 @@ class AuthProvider extends ChangeNotifier {
       return true;
     }
   }
+
+  // Decodifica el token JWT para extraer los datos del usuario
+  Map<String, dynamic>? get userData {
+    if (_token == null) return null;
+    try {
+      final parts = _token!.split('.');
+      if (parts.length != 3) return null;
+      
+      // Normalizamos el base64 por si le faltan caracteres de relleno '='
+      String normalized = base64Url.normalize(parts[1]);
+      final payload = utf8.decode(base64Url.decode(normalized));
+      
+      return jsonDecode(payload) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Getter auxiliar para obtener directamente el nombre o usuario
+  String? get userName {
+    final data = userData;
+    if (data == null) return null;
+    // Retorna según las llaves estándar del JWT (sub, name, username, email)
+    return data['name'] ?? data['username'] ?? data['sub'] ?? data['email'];
+  }
 }
