@@ -33,7 +33,7 @@ class UserReview {
         movieId: json['movieId'] as int,
         rating: json['rating'] as int?,
         content: json['content'] as String,
-        createdAt: DateTime.parse(json['createdAt'] as String),
-        updatedAt: DateTime.parse(json['updatedAt'] as String),
+        createdAt: DateTime.parse(json['createdAt'] as String).toUtc(),
+        updatedAt: DateTime.parse(json['updatedAt'] as String).toUtc(),
       );
 }

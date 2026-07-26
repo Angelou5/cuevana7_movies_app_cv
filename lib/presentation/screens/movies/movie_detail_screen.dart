@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cuevana7_movies_app_cv/domain/entities/movie.dart';
+import 'package:cuevana7_movies_app_cv/domain/entities/review.dart';
 import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/movie_provider.dart';
 import 'package:cuevana7_movies_app_cv/presentation/providers/user_reviews_provider.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/movie_card.dart';
+import 'package:cuevana7_movies_app_cv/presentation/widgets/review_card.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/app_snackbar.dart';
 import 'package:cuevana7_movies_app_cv/presentation/widgets/bottom_fade_mask.dart';
 import 'package:cuevana7_movies_app_cv/domain/entities/actor.dart';
@@ -30,8 +32,10 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
 
   late Future<List<Movie>> _similarFuture;
   late Future<List<Actor>> _castFuture;
+  late Future<List<Review>> _tmdbReviewsFuture;
   bool _showAllCast = false;
   bool _showAllSimilar = false;
+  bool _showAllTmdbReviews = false;
 
   @override
   void initState() {
@@ -58,6 +62,8 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 .getByGenre(genreId)
                 .then((list) => list.where((m) => m.id != movie.id).toList());
       _castFuture = repo.getMovieCast(movie.id);
+      _tmdbReviewsFuture =
+          context.read<MovieProvider>().getMovieReviewsForMovie(movie.id);
     });
   }
 
@@ -96,16 +102,12 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
       backgroundColor: AppColors.background,
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            stops: [0.20, 1.0],
-            colors: [AppColors.background, AppColors.dark],
-          ),
+          color: AppColors.background,
         ),
         child: SafeArea(
           bottom: false,
           child: BottomFadeMask(
+            fadeHeightFraction: 0.06,
             child: RefreshIndicator(
               color: AppColors.white,
               backgroundColor: Colors.transparent,
@@ -115,6 +117,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 await Future.wait([
                   _similarFuture,
                   _castFuture,
+                  _tmdbReviewsFuture,
                 ]);
               },
               child: SingleChildScrollView(
@@ -312,39 +315,99 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                     ),
                     const SizedBox(height: sectionSpacing),
 
-                    // ── Mi reseña ────────────────────────────────
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Consumer<UserReviewsProvider>(
-                        builder: (context, reviewsProvider, _) {
-                          if (reviewsProvider.isLoading) {
-                            return const SizedBox(
-                              height: 80,
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.white,
-                                  strokeWidth: 2,
+                    // ── Mi reseña (solo si existe) ────────────────
+                    Consumer<UserReviewsProvider>(
+                      builder: (context, reviewsProvider, _) {
+                        final myReview = reviewsProvider.myReview;
+                        if (myReview == null) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: UserReviewCard(
+                            review: myReview,
+                            onEdit: () => _openReviewForm(
+                              initialContent: myReview.content,
+                              initialRating: myReview.rating,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: sectionSpacing),
+
+                    // ── Reseñas de la comunidad ────────────────────
+                    FutureBuilder<List<Review>>(
+                      future: _tmdbReviewsFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) return const SizedBox.shrink();
+                        if (!snapshot.hasData) return const SizedBox.shrink();
+                        final reviews = snapshot.data!;
+                        if (reviews.isEmpty) return const SizedBox.shrink();
+
+                        final displayCount = _showAllTmdbReviews
+                            ? reviews.length
+                            : (reviews.length > 5 ? 5 : reviews.length);
+
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Reseñas de la comunidad',
+                                    style: TextStyle(
+                                      color: AppColors.white,
+                                      fontSize: 24,
+                                      fontFamily: 'InclusiveSans',
+                                    ),
+                                  ),
+                                  if (reviews.length > 5 && !_showAllTmdbReviews)
+                                    GestureDetector(
+                                      onTap: () => setState(
+                                          () => _showAllTmdbReviews = true),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'Ver más',
+                                            style: TextStyle(
+                                              color: AppColors.hint,
+                                              fontSize: 14,
+                                              fontFamily: 'Montserrat',
+                                            ),
+                                          ),
+                                          Icon(
+                                            Icons.chevron_right,
+                                            color: AppColors.hint,
+                                            size: 18,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: displayCount,
+                                separatorBuilder: (_, _) =>
+                                    const SizedBox(height: 10),
+                                itemBuilder: (_, i) => ReviewCard(
+                                  movieReview: MovieReview(reviews[i], movie.title),
+                                  showTitle: false,
                                 ),
                               ),
-                            );
-                          }
-
-                          final myReview = reviewsProvider.myReview;
-                          if (myReview != null) {
-                            return UserReviewCard(
-                              review: myReview,
-                              onEdit: () => _openReviewForm(
-                                initialContent: myReview.content,
-                                initialRating: myReview.rating,
-                              ),
-                            );
-                          }
-
-                          return const SizedBox.shrink();
-                        },
-                      ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
-                    const SizedBox(height: 32),
+
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),

@@ -359,7 +359,7 @@ class _PerfilTile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     profileProvider.isUploading
-                        ? 'Simulando subida al servidor...'
+                        ? 'Guardando...'
                         : subtitulo,
                     style: TextStyle(
                       color: profileProvider.isUploading

@@ -28,7 +28,7 @@ class CastCarousel extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: maxItems,
-        separatorBuilder: (_, __) => const SizedBox(width: 14),
+        separatorBuilder: (_, _) => const SizedBox(width: 14),
         itemBuilder: (_, index) {
           final actor = cast[index];
 
@@ -54,7 +54,7 @@ class CastCarousel extends StatelessWidget {
                       : Image.network(
                           actor.profilePath,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(
+                          errorBuilder: (_, _, _) => const Icon(
                             Icons.person,
                             color: Colors.white70,
                             size: 34,

@@ -253,7 +253,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             scrollDirection: Axis.horizontal,
                                             itemCount:
                                                 _filteredMovies.length + 1,
-                                            separatorBuilder: (_, __) =>
+                                            separatorBuilder: (_, _) =>
                                                 const SizedBox(width: 10),
                                             itemBuilder: (context, index) {
                                               if (index ==

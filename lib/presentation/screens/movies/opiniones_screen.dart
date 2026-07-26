@@ -235,13 +235,13 @@ class _ResenaCard extends StatelessWidget {
     required this.onDelete,
   });
 
-  String _timeAgo(DateTime date) {
-    final diff = DateTime.now().difference(date);
+String _timeAgo(DateTime date) {
+    final diff = DateTime.now().toUtc().difference(date.toUtc());
     if (diff.inDays > 0) return 'Hace ${diff.inDays}d';
     if (diff.inHours > 0) return 'Hace ${diff.inHours}h';
     if (diff.inMinutes > 0) return 'Hace ${diff.inMinutes}m';
     return 'Ahora';
-  }
+}
 
   @override
   Widget build(BuildContext context) {

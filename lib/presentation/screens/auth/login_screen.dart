@@ -110,7 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // Si el usuario le da para atrás o cancela la ventanita flotante
 
       // 4. Extraemos los datos de autenticación de Google
-      final googleAuth = await googleUser.authentication;
+      final googleAuth = googleUser.authentication;
       final String? idToken = googleAuth.idToken;
 
       if (idToken == null) {

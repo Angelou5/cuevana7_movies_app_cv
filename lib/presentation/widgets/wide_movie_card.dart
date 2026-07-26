@@ -49,7 +49,7 @@ class _WideMovieCardState extends State<WideMovieCard> {
                     Image.network(
                       movie.backdropPath,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const SizedBox(),
+                      errorBuilder: (_, _, _) => const SizedBox(),
                     ),
                   Container(
                     color: const Color(0xFF0F0F0F).withValues(alpha: 0.32),

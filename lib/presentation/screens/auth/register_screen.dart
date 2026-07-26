@@ -186,7 +186,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 fontSize: 13,
                 color: satisfied
                     ? Colors.greenAccent
-                    : Colors.redAccent.withOpacity(0.85),
+                    : Colors.redAccent.withValues(alpha: 0.85),
               ),
             ),
           ),
