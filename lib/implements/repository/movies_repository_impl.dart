@@ -1,6 +1,8 @@
 import '../../domain/datasources/movies_datasources.dart';
 import '../../domain/entities/actor.dart';
+import '../../domain/entities/actor_detail.dart';
 import '../../domain/entities/movie.dart';
+import '../../domain/entities/movie_image.dart';
 import '../../domain/entities/review.dart';
 import '../../domain/repository/movies_repository.dart';
 
@@ -39,5 +41,22 @@ class MovieRepositoryImpl implements MovieRepositories {
   @override
   Future<String?> getMovieTrailerKey(int movieId) {
     return datasource.getMovieTrailerKey(movieId);
+  }
+
+  // NUEVO: detalle del actor y su filmografía
+  @override
+  Future<ActorDetail> getActorDetails(int actorId) {
+    return datasource.getActorDetails(actorId);
+  }
+
+  @override
+  Future<List<Movie>> getActorMovies(int actorId) {
+    return datasource.getActorMovies(actorId);
+  }
+
+  // NUEVO: galería de imágenes de la película
+  @override
+  Future<List<MovieImage>> getMovieImages(int movieId) {
+    return datasource.getMovieImages(movieId);
   }
 }

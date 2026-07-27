@@ -33,6 +33,8 @@ dependencies:
   provider: ^6.1.5+1
   flutter_dotenv: ^6.0.1
   google_sign_in: ^7.2.0
+  pdf: ^3.11.1
+  printing: ^5.13.4
   youtube_player_flutter: ^10.0.1
 dev_dependencies:
   flutter_test:
