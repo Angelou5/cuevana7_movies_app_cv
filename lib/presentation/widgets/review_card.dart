@@ -4,7 +4,8 @@ import 'package:cuevana7_movies_app_cv/presentation/providers/movie_provider.dar
 
 class ReviewCard extends StatefulWidget {
   final MovieReview movieReview;
-  const ReviewCard({super.key, required this.movieReview});
+  final bool showTitle;
+  const ReviewCard({super.key, required this.movieReview, this.showTitle = true});
 
   @override
   State<ReviewCard> createState() => _ReviewCardState();
@@ -45,18 +46,20 @@ class _ReviewCardState extends State<ReviewCard> {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.movieReview.movieTitle,
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontSize: 13,
-                    fontFamily: 'InclusiveSans',
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
+                children: [
+                  if (widget.showTitle) ...[
+                    Text(
+                      widget.movieReview.movieTitle,
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 13,
+                        fontFamily: 'InclusiveSans',
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                  ],
+                  Text(
                   review.author,
                   style: const TextStyle(
                     color: AppColors.hint,

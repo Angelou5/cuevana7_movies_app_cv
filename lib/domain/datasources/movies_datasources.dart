@@ -7,6 +7,8 @@
 //ORIGEN DE DATOS
 import 'package:cuevana7_movies_app_cv/domain/entities/movie.dart';
 import 'package:cuevana7_movies_app_cv/domain/entities/actor.dart';
+import 'package:cuevana7_movies_app_cv/domain/entities/actor_detail.dart';
+import 'package:cuevana7_movies_app_cv/domain/entities/movie_image.dart';
 import 'package:cuevana7_movies_app_cv/domain/entities/review.dart';
 
 abstract class MovieDatasources {
@@ -17,6 +19,11 @@ abstract class MovieDatasources {
   Future<List<Movie>> getByGenre(int genreId, {int page = 1});
   Future<List<Actor>> getMovieCast(int movieId);
   Future<String?> getMovieTrailerKey(int movieId);
+  // NUEVO: detalle del actor (biografía, foto, etc.) y su filmografía
+  Future<ActorDetail> getActorDetails(int actorId);
+  Future<List<Movie>> getActorMovies(int actorId);
+  // NUEVO: galería de imágenes de la película
+  Future<List<MovieImage>> getMovieImages(int movieId);
 }
 
 //https://www.themoviedb.org/

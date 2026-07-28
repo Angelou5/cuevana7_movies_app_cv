@@ -5,15 +5,15 @@ class AppColors {
 
   // Fondos
   static const Color background = Color(
-    0xFF1D1C1B,
+    0xFF091A28,
   ); // antes blanco, ahora fondo superior
   static const Color dark = Color(
     0xFF07163B,
   ); // antes negro, ahora fondo inferior
-  static const Color inputFill = Color(0xFF282828); // fondo de los campos
-  static const Color primary = Color(0xFF091738); // botón degradado abajo
+  static const Color inputFill = Color(0xFF164364); // fondo de los campos
+  static const Color primary = Color(0xFF7DC4DC); // botón degradado abajo
   static const Color buttonText = Color(
-    0x641940E9,
+    0xFF7DC4DC,
   ); // botón degradado arriba (39% opacidad)
   static const Color profileCircle = Color(0xFF0B1735); // fondo círculo perfil
 

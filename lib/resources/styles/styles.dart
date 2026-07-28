@@ -19,7 +19,7 @@ class AppStyles {
   );
 
   static const TextStyle hintField = TextStyle(
-    color: AppColors.hint,
+    color: AppColors.white,
     fontSize: 24,
     fontWeight: FontWeight.w400,
     fontFamily: 'Montserrat',
@@ -33,7 +33,7 @@ class AppStyles {
   );
 
   static const TextStyle forgotPassword = TextStyle(
-    color: AppColors.divider, // antes grey, ahora divider
+    color: AppColors.white, // antes grey, ahora divider
     fontSize: 16,
     fontWeight: FontWeight.w400,
     fontFamily: 'Montserrat',

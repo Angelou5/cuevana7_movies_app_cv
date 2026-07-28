@@ -16,6 +16,13 @@ class UserReviewCard extends StatelessWidget {
     required this.onEdit,
   });
 
+  String _fmtDiff(Duration d) {
+    if (d.inDays > 0) return 'Hace ${d.inDays}d';
+    if (d.inHours > 0) return 'Hace ${d.inHours}h';
+    if (d.inMinutes > 0) return 'Hace ${d.inMinutes}m';
+    return 'Ahora';
+  }
+
   void _confirmDelete(BuildContext context) {
     showDialog(
       context: context,
@@ -147,6 +154,17 @@ class UserReviewCard extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
+              if (review.updatedAt.difference(review.createdAt).inSeconds > 60) ...[
+                const SizedBox(width: 8),
+                Text(
+                  'Editado · ${_fmtDiff(DateTime.now().toUtc().difference(review.updatedAt.toUtc()))}',
+                  style: TextStyle(
+                    color: AppColors.hint,
+                    fontSize: 11,
+                    fontFamily: 'InclusiveSans',
+                  ),
+                ),
+              ],
             ],
           ),
 

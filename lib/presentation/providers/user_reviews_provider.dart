@@ -157,6 +157,7 @@ class UserReviewsProvider extends ChangeNotifier {
       });
       if (data != null) {
         myReview = UserReview.fromJson(data);
+        allMyReviews.insert(0, myReview!);
         notifyListeners();
         return true;
       }
@@ -176,6 +177,8 @@ class UserReviewsProvider extends ChangeNotifier {
       });
       if (data != null) {
         myReview = UserReview.fromJson(data);
+        final index = allMyReviews.indexWhere((r) => r.id == reviewId);
+        if (index != -1) allMyReviews[index] = myReview!;
         notifyListeners();
         return true;
       }

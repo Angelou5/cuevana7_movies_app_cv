@@ -32,7 +32,7 @@ class MovieCard extends StatelessWidget {
                     Image.network(
                       movie.posterPath,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const SizedBox(),
+                      errorBuilder: (_, _, _) => const SizedBox(),
                     ),
                   Positioned(
                     bottom: 0,

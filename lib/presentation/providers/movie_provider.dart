@@ -271,4 +271,8 @@ class MovieProvider extends ChangeNotifier {
     await Future.wait(futures);
     notifyListeners();
   }
+
+  Future<List<Review>> getMovieReviewsForMovie(int movieId) {
+    return repository.getMovieReviews(movieId);
+  }
 }

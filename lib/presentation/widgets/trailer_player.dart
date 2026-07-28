@@ -7,7 +7,7 @@ class TrailerPlayer extends StatefulWidget {
   const TrailerPlayer({super.key, required this.videoId});
 
   @override
- State<TrailerPlayer> createState() => _TrailerPlayerState();
+  State<TrailerPlayer> createState() => _TrailerPlayerState();
 }
 
 class _TrailerPlayerState extends State<TrailerPlayer> {
@@ -19,9 +19,6 @@ class _TrailerPlayerState extends State<TrailerPlayer> {
     _controller = YoutubePlayerController.fromVideoId(
       videoId: widget.videoId,
       autoPlay: true,
-      params: const YoutubePlayerParams(
-        showFullscreenButton: true,
-      ),
     );
   }
 
@@ -35,34 +32,42 @@ class _TrailerPlayerState extends State<TrailerPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF1A1A1A),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade600,
-                borderRadius: BorderRadius.circular(2),
+    return DraggableScrollableSheet(
+      initialChildSize: 0.45,
+      minChildSize: 0.35,
+      maxChildSize: 1.0,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFF1A1A1A),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: ListView(
+            controller: scrollController,
+            physics: const ClampingScrollPhysics(),
+            children: [
+              const SizedBox(height: 12),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade600,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            YoutubePlayer(
-              controller: _controller,
-              aspectRatio: 16 / 9,
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
+              const SizedBox(height: 12),
+              YoutubePlayer(
+                controller: _controller,
+                aspectRatio: 16 / 9,
+                enableFullScreenOnVerticalDrag: false,
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -38,7 +38,7 @@ class PrimaryButton extends StatelessWidget {
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(
-                  color: Colors.white,
+                  color: AppColors.background, // Color del indicador de carga
                   strokeWidth: 2.5,
                 ),
               )
@@ -52,7 +52,7 @@ class PrimaryButton extends StatelessWidget {
                   Text(
                     label,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.background,
                       fontSize: 24,
                       fontFamily: 'Inclusive Sans',
                       fontWeight: FontWeight.w400,

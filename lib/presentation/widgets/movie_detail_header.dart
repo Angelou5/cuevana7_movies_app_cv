@@ -67,7 +67,7 @@ class _MovieDetailHeaderState extends State<MovieDetailHeader> {
                 ? Image.network(
                     movie.backdropPath,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
+                    errorBuilder: (_, _, _) =>
                         Container(color: const Color(0xFF262524)),
                   )
                 : Container(color: const Color(0xFF262524)),

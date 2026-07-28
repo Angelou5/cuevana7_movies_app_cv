@@ -235,11 +235,20 @@ class _ResenaCard extends StatelessWidget {
     required this.onDelete,
   });
 
-  String _timeAgo(DateTime date) {
-    final diff = DateTime.now().difference(date);
-    if (diff.inDays > 0) return 'Hace ${diff.inDays}d';
-    if (diff.inHours > 0) return 'Hace ${diff.inHours}h';
-    if (diff.inMinutes > 0) return 'Hace ${diff.inMinutes}m';
+String _timeAgo(UserReview review) {
+    final createdDiff = DateTime.now().toUtc().difference(review.createdAt.toUtc());
+    final wasEdited = review.updatedAt.difference(review.createdAt).inSeconds > 60;
+    if (wasEdited) {
+      final updatedDiff = DateTime.now().toUtc().difference(review.updatedAt.toUtc());
+      return 'Editado · ${_fmtDiff(updatedDiff)}';
+    }
+    return _fmtDiff(createdDiff);
+  }
+
+  String _fmtDiff(Duration d) {
+    if (d.inDays > 0) return 'Hace ${d.inDays}d';
+    if (d.inHours > 0) return 'Hace ${d.inHours}h';
+    if (d.inMinutes > 0) return 'Hace ${d.inMinutes}m';
     return 'Ahora';
   }
 
@@ -295,7 +304,7 @@ class _ResenaCard extends StatelessWidget {
                     ],
                     const SizedBox(height: 2),
                     Text(
-                      _timeAgo(review.createdAt),
+                      _timeAgo(review),
                       style: const TextStyle(
                         color: _textoSecundario,
                         fontSize: 11,

@@ -23,7 +23,7 @@ class SearchBarWidget extends StatelessWidget {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: const Color(0xFF282828),
+        color: AppColors.inputFill,
         borderRadius: BorderRadius.circular(45),
       ),
       child: Row(
@@ -34,7 +34,7 @@ class SearchBarWidget extends StatelessWidget {
             width: 34,
             height: 34,
             colorFilter: const ColorFilter.mode(
-              AppColors.hint,
+              AppColors.white,
               BlendMode.srcIn,
             ),
           ),
@@ -52,7 +52,7 @@ class SearchBarWidget extends StatelessWidget {
                 border: InputBorder.none,
                 hintText: hintText,
                 hintStyle: const TextStyle(
-                  color: AppColors.hint,
+                  color: AppColors.white,
                   fontSize: 23,
                   fontFamily: 'InclusiveSans',
                 ),
@@ -70,7 +70,7 @@ class SearchBarWidget extends StatelessWidget {
               onTap: onClear,
               child: const Padding(
                 padding: EdgeInsets.only(left: 8),
-                child: Icon(Icons.close, color: AppColors.hint, size: 24),
+                child: Icon(Icons.close, color: AppColors.white, size: 24),
               ),
             ),
           const SizedBox(width: 20),

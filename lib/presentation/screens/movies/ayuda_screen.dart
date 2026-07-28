@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 
 class AyudaScreen extends StatelessWidget {
   const AyudaScreen({super.key});
 
-  static const Color fondo = Color(0xFF0B1626);
   static const Color fondoItem = Color(0xFF122642);
   static const Color borde = Color(0xFF2E6E8E);
 
@@ -17,7 +17,7 @@ class AyudaScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: fondo,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [

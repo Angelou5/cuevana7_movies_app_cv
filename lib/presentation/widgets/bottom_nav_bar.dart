@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cuevana7_movies_app_cv/resources/colors/colors.dart';
 
-enum NavTab { home, favorites, profile }
+enum NavTab { home, favorites, profile, movies }
 
 class BottomNavBar extends StatelessWidget {
   final NavTab activeTab;
