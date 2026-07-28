@@ -193,7 +193,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                             const SizedBox(height: 10),
                             if (!snapshot.hasData)
                               const SizedBox(
-                                height: 110,
+                                height: 200,
                                 child: Center(
                                   child: CircularProgressIndicator(
                                     color: AppColors.white,

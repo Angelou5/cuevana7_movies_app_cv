@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -202,11 +204,18 @@ class FavoritesPdfService {
   }
 
   /// Genera el PDF y abre el diálogo nativo de compartir / guardar / imprimir.
-  static Future<void> generateAndShare(List<Movie> favorites) async {
-    final bytes = await generate(favorites);
+  static Future<void> sharePdf(Uint8List bytes) async {
     await Printing.sharePdf(
       bytes: bytes,
       filename: 'mis_peliculas_favoritas.pdf',
     );
+  }
+
+  /// Guarda el PDF localmente en el directorio de documentos de la app.
+  static Future<String> saveLocally(Uint8List bytes) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final filePath = '${directory.path}/mis_peliculas_favoritas.pdf';
+    await File(filePath).writeAsBytes(bytes);
+    return filePath;
   }
 }

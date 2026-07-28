@@ -52,7 +52,12 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
     setState(() => _isGeneratingPdf = true);
     try {
-      await FavoritesPdfService.generateAndShare(favorites);
+      final bytes = await FavoritesPdfService.generate(favorites);
+      await FavoritesPdfService.saveLocally(bytes);
+      if (mounted) {
+        await FavoritesPdfService.sharePdf(bytes);
+        showSuccessSnackBar(context, 'PDF generado correctamente');
+      }
     } catch (e) {
       if (mounted) {
         showErrorSnackBar(context, 'No se pudo generar el PDF: $e');

@@ -29,7 +29,7 @@ class MovieGallery extends StatelessWidget {
     }
 
     return SizedBox(
-      height: 110,
+      height: 200,
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         scrollDirection: Axis.horizontal,
@@ -46,8 +46,8 @@ class MovieGallery extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               child: image.thumbnailUrl.isEmpty
                   ? Container(
-                      width: 160,
-                      height: 110,
+                      width: 300,
+                      height: 200,
                       color: Colors.grey.shade800,
                       child: const Icon(
                         Icons.image_not_supported,
@@ -56,12 +56,12 @@ class MovieGallery extends StatelessWidget {
                     )
                   : Image.network(
                       image.thumbnailUrl,
-                      height: 110,
-                      width: 160,
+                      height: 200,
+                      width: 300,
                       fit: BoxFit.cover,
                       errorBuilder: (_, _, _) => Container(
-                        width: 160,
-                        height: 110,
+                        width: 300,
+                        height: 200,
                         color: Colors.grey.shade800,
                         child: const Icon(
                           Icons.image_not_supported,
