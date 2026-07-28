@@ -14,7 +14,7 @@ class LikedScreen extends StatefulWidget {
   const LikedScreen({super.key});
 
   @override
-  State<LikedScreen> createState() => _LikedScreenState();
+  State<LikedScreen> createState() => _LikedScreenState();  
 }
 
 class _LikedScreenState extends State<LikedScreen> {
