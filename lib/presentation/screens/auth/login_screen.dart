@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:go_router/go_router.dart';
@@ -89,27 +91,29 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   // Función lista para conectar con la API
+  // Función lista para conectar con la API
   Future<void> _onGoogleSignInPressed() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // 1. Usar la instancia Singleton (Nuevo estándar de google_sign_in 7.0+)
-     // 1. Usar la instancia Singleton (Nuevo estándar)
       final googleSignIn = GoogleSignIn.instance;
 
-      // 2. Inicializar el SDK de Google SOLO con tu clave
+      // Inicialización con soporte multiplataforma para iOS
       await googleSignIn.initialize(
+        // iOS requiere el Client ID de iOS
+        clientId: Platform.isIOS
+        ? '122965167698-o6t1mrc2a9oiqj638dp5ivlvsqeb3pno.apps.googleusercontent.com'       
+        : null,
+        // Tu backend sigue recibiendo el token generado para la Web/Server
         serverClientId: '122965167698-gmeepqqqvocvlis9cjq2fmcdl5p2ogha.apps.googleusercontent.com',
       );
 
-      // 3. Invocar la ventana nativa
+      // Invocar la ventana nativa
       final googleUser = await googleSignIn.authenticate();
-      
-      // Si el usuario le da para atrás o cancela la ventanita flotante
 
-      // 4. Extraemos los datos de autenticación de Google
+      // Extraemos los datos de autenticación de Google
       final googleAuth = await googleUser.authentication;
       final String? idToken = googleAuth.idToken;
 
@@ -117,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
         throw Exception('No se pudo generar el ID Token de Google');
       }
 
-      // 5. Le pegamos a TU backend de Shelf
+      // Le pegamos a TU backend de Shelf
       final url = Uri.parse('https://pixonsite.org/auth/google');
       final response = await http.post(
         url,
@@ -133,10 +137,9 @@ class _LoginScreenState extends State<LoginScreen> {
         final data = jsonDecode(response.body);
         final String token = data['token']; // El JWT que firmó tu Shelf server
 
-        // 6. Guardamos el token en tu AuthProvider para mantener al usuario autenticado
+        // Guardamos el token en tu AuthProvider para mantener al usuario autenticado
         await context.read<AuthProvider>().setToken(token);
 
-        // Opcional por si usas persistencia rápida para la huella dactilar
         const storage = FlutterSecureStorage();
         await storage.write(key: 'saved_email', value: googleUser.email);
 
@@ -145,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
         context.go('/');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al validar tu cuenta de Google con el servidor $response.statusCode')),
+          SnackBar(content: Text('Error al validar tu cuenta de Google con el servidor ${response.statusCode}')),
         );
       }
 
